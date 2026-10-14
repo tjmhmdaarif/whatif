@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+
+# Generated data artifacts (rebuild via the CLI)
+data/faiss_index/
+data/knowledge_graph.graphml
+data/alias_map.json
+data/chroma_db/
+data/llm_cache/
+data/extraction/
+
+# Logs and run output
+logs/
+*.log
+
+# Evaluation output
+results/*.json
+!results/REPORT.md
+
+# Scratch files
+_*.txt
+_*.log
+_*.ps1
+
+# Node / Next.js
+node_modules/
+frontend/.next/
+frontend/out/
+next-env.d.ts
+.vercel
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Tooling scratch dirs
+.playwright-cli/
+.playwright-mcp/
+.streamlit/secrets.toml

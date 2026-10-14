@@ -1,0 +1,103 @@
+# GraphRAG-MultiHop Configuration
+
+# Embedding model settings
+embedding:
+  model_name: "BAAI/bge-small-en-v1.5"
+  # Alternative: "all-MiniLM-L6-v2"
+  device: "cpu"  # or "cuda" if available
+  batch_size: 32
+  normalize_embeddings: true
+
+# Vector store settings
+vector_store:
+  type: "faiss"  # or "chroma"
+  faiss:
+    index_path: "data/faiss_index"
+    index_type: "IndexFlatIP"  # Inner product for normalized embeddings
+  chroma:
+    persist_directory: "data/chroma_db"
+    collection_name: "graphrag_chunks"
+
+# Graph store settings
+graph_store:
+  type: "networkx"  # or "neo4j" in future
+  networkx:
+    graph_path: "data/knowledge_graph.graphml"
+    alias_map_path: "data/alias_map.json"
+  neo4j:
+    uri: "bolt://localhost:7687"
+    username: "neo4j"
+    password: "${NEO4J_PASSWORD}"
+    database: "neo4j"
+
+# LLM settings
+llm:
+  provider: "extractive"  # "anthropic", "ollama", "extractive" (offline), or "mock"
+  anthropic:
+    model: "claude-3-haiku-20240307"
+    api_key: "${ANTHROPIC_API_KEY}"
+    max_tokens: 1024
+    temperature: 0.0
+  ollama:
+    model: "llama3.1:8b"
+    base_url: "http://localhost:11434"
+    max_tokens: 1024
+    temperature: 0.0
+  cache:
+    enabled: true
+    cache_dir: "data/llm_cache"
+
+# Chunking settings
+chunking:
+  chunk_size: 512
+  chunk_overlap: 64
+  min_chunk_size: 50
+
+# Retrieval settings
+retrieval:
+  vector_top_k: 10
+  graph_max_hops: 2
+  graph_top_k: 10
+  hybrid_fusion_weight: 0.5  # 0 = vector only, 1 = graph only
+  rrf_k: 60
+  max_context_tokens: 4000
+  deduplicate_chunks: true
+
+# Entity extraction settings
+extraction:
+  entity_types: ["PERSON", "ORG", "LOCATION", "EVENT", "DATE", "WORK_OF_ART", "PRODUCT", "CONCEPT"]
+  relation_types: ["FOUNDED", "LOCATED_IN", "WORKS_FOR", "CREATED", "PART_OF", "RELATED_TO", "BORN_IN", "DIED_IN", "MARRIED_TO", "EDUCATED_AT"]
+  max_entities_per_chunk: 20
+  max_relations_per_chunk: 30
+  retry_attempts: 3
+
+# Entity resolution settings
+entity_resolution:
+  embedding_similarity_threshold: 0.85
+  string_similarity_threshold: 0.9
+  merge_aliases: true
+
+# Evaluation settings
+evaluation:
+  dataset: "hotpotqa"  # or "musique", "2wikimultihopqa"
+  split: "validation"
+  limit: 300
+  seed: 42
+  metrics: ["exact_match", "f1", "supporting_fact_recall", "llm_judge"]
+
+# API settings
+api:
+  host: "0.0.0.0"
+  port: 8000
+  reload: true
+
+# Streamlit settings
+streamlit:
+  host: "0.0.0.0"
+  port: 8501
+
+# Logging
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/graphrag.log"
