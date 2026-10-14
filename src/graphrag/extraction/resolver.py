@@ -71,20 +71,41 @@ class EntityResolver:
         return normalized
 
     def compute_string_similarity(self, name1: str, name2: str) -> float:
-        """Compute string similarity between two names."""
+        """Compute string similarity between two names.
+
+        ``partial_ratio`` is deliberately not used: it scores any short name that
+        appears as a substring of a longer one as a near-perfect match, which
+        collapses unrelated entities ("Tivoli Gardens" vs "Radar Station")
+        into a single cluster.
+
+        Args:
+            name1: First entity name.
+            name2: Second entity name.
+
+        Returns:
+            Similarity in the range ``[0.0, 1.0]``.
+        """
         norm1 = self.normalize_name(name1)
         norm2 = self.normalize_name(name2)
 
         if norm1 == norm2:
             return 1.0
 
-        # Use multiple similarity measures
+        # Use order-insensitive whole-string measures only.
         ratio = fuzz.ratio(norm1, norm2) / 100.0
-        partial = fuzz.partial_ratio(norm1, norm2) / 100.0
         token_sort = fuzz.token_sort_ratio(norm1, norm2) / 100.0
 
-        # Return max of the measures
-        return max(ratio, partial, token_sort)
+        # Token containment: high when one name's tokens are a subset of the
+        # other's ("New York" within "New York City"), which is the genuine
+        # abbreviation case, but low when the names merely share a token.
+        tokens1 = set(norm1.split())
+        tokens2 = set(norm2.split())
+        if tokens1 and tokens2:
+            containment = len(tokens1 & tokens2) / min(len(tokens1), len(tokens2))
+        else:
+            containment = 0.0
+
+        return max(ratio, token_sort, containment)
 
     def compute_embedding_similarity(self, entities: list[Entity]) -> np.ndarray:
         """Compute pairwise embedding similarity matrix for entities."""

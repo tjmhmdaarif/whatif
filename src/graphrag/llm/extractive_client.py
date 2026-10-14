@@ -27,6 +27,38 @@ _WHEN = re.compile(r"\b(when|what year|what date|which year)\b", re.I)
 _WHERE = re.compile(r"\b(where|which country|which city|what place)\b", re.I)
 _WHO = re.compile(r"\b(who|whose|whom)\b", re.I)
 
+# Common words that are capitalized only because they begin a sentence. They are
+# rejected as entity candidates.
+_SENTENCE_STARTERS = frozenset(
+    """he she it they we i you the a an this that these those there here his her its
+    their our my your his after before during when where which who whom whose what
+    while although however therefore thus also both each some many most other another
+    several such as at by for from in of on to with without about into over under
+    between among within upon despite according following born based known located
+    founded established created opened closed built designed used made called named
+    born died married educated worked served represented included featured
+    """.split()
+)
+
+# Single words that are far more likely to be ordinary prose than entity names.
+# Multi-word phrases are not filtered against this, since names like
+# "On Chesil Beach" are only distinguishable by their proper-noun shape.
+_COMMON_WORDS = frozenset(
+    """american british english french german italian spanish russian chinese japanese
+    indian pakistani european african australian canadian irish scottish welsh
+    city town village county state country region district province area island
+    river mountain lake sea ocean north south east west northern southern central
+    first second third last next new old early late modern ancient royal national
+    international public private general major minor local rural urban
+    film album song single series show game book novel magazine newspaper
+    school college university church cathedral castle palace museum theatre theater
+    company group band team club society association organisation organization
+    people person man woman child family member king queen president minister
+    war battle treaty election revolution century decade year month week day
+    population area name type form part side end top bottom front back
+    """.split()
+)
+
 # Answer-type specific patterns applied to candidate sentences.
 _DATE = re.compile(
     r"\b(\d{1,2}\s+\w+\s+\d{4}|\w+\s+\d{1,2},?\s+\d{4}|\d{4}|"
@@ -176,6 +208,59 @@ def _compress(sentence: str, question_type: str) -> str:
     span = re.split(r",\s*(?:which|who|and|but)\s", span)[0]
 
     return span.strip().rstrip(".").strip()
+
+
+_PERSON_HINT = re.compile(
+    r"\b(?:born|died|actor|actress|singer|author|politician|player|director|producer|"
+    r"admiral|general|president|minister|writer|artist|photographer|journalist)\b", re.I
+)
+_LOCATION_HINT = re.compile(
+    r"\b(?:city|town|village|county|country|island|river|mountain|located|capital|"
+    r"province|district|region|state|peninsula)\b", re.I
+)
+_DATE_HINT = re.compile(
+    r"\b(?:January|February|March|April|May|June|July|August|September|October|"
+    r"November|December|\b(?:1[5-9]|20)\d{2}\b)\b"
+)
+_ORG_HINT = re.compile(
+    r"\b(?:company|band|group|club|school|university|party|organisation|organization|"
+    r"association|studio|label|agency|force|army|navy|squadron|station)\b", re.I
+)
+_WORK_HINT = re.compile(
+    r"\b(?:film|album|song|single|novel|book|series|show|magazine|newspaper|"
+    r"musical|opera|play)\b", re.I
+)
+
+
+def _guess_type(name: str, context: str) -> str:
+    """Infer a coarse entity type from surrounding text.
+
+    Assigning a realistic type matters because the resolver only merges entities
+    of the same type; labelling everything ``CONCEPT`` lets unrelated names merge.
+
+    Args:
+        name: The entity name.
+        context: Text the entity was found in.
+
+    Returns:
+        One of ``PERSON``, ``LOCATION``, ``ORG``, ``DATE``, ``WORK_OF_ART`` or
+        ``CONCEPT``.
+    """
+    window = context[max(0, context.find(name) - 120): context.find(name) + 160]
+
+    if _DATE_HINT.search(name) or (name.isdigit() and len(name) == 4):
+        return "DATE"
+    if _LOCATION_HINT.search(window):
+        return "LOCATION"
+    if _PERSON_HINT.search(window):
+        return "PERSON"
+    if _WORK_HINT.search(window):
+        return "WORK_OF_ART"
+    if _ORG_HINT.search(window):
+        return "ORG"
+
+    # Multi-word capitalized phrases are most often works or organisations.
+    return "WORK_OF_ART" if " " in name else "CONCEPT"
 
 
 class ExtractiveClient(LLMClient):
@@ -355,23 +440,37 @@ class ExtractiveClient(LLMClient):
         entities: list[dict[str, str]] = []
         seen: set[str] = set()
 
-        # Capitalized multi-word phrases, skipping sentence-initial words.
+        # Capitalized phrases, allowing initials ("Iqbal F. Qadir"), apostrophes,
+        # digits and internal connectors ("On Chesil Beach (film)" style titles).
         phrase = re.compile(
-            r"\b([A-Z][a-z]+(?:\s+(?:of|the|de|van)\s+[A-Z][a-z]+|\s+[A-Z][a-z]+)*)\b"
+            r"\b([A-Z][\w.'-]*(?:\s+(?:of|the|de|van|and)\s+[A-Z][\w.'-]*|\s+[A-Z][\w.'-]*)*)\b"
         )
         for match in phrase.finditer(text):
             # Drop a leading article so "The Eiffel Tower" stores as "Eiffel Tower".
             name = re.sub(
                 r"^(?:The|A|An)\s+", "", match.group(1).strip(), flags=re.I
             ).strip()
+
+            # Reject sentence-initial common words, which are capitalized by
+            # position rather than because they name something.
+            if name.lower() in _SENTENCE_STARTERS:
+                continue
+            # A phrase must not span a sentence boundary ("Denmark. It").
+            if re.search(r"[.!?;:]", name):
+                continue
             if len(name) < 3 or name in seen:
                 continue
-            # Skip a phrase that only looks capitalized because it starts a sentence.
-            prefix = text[max(0, match.start() - 2):match.start()]
-            if prefix.endswith(". "):
+            # A bare single word is only a candidate when it is not a common
+            # English word, so plain nouns and verbs are filtered out.
+            if " " not in name and "." not in name and name.lower() in _COMMON_WORDS:
                 continue
+
             seen.add(name)
-            entities.append({"name": name, "type": "CONCEPT", "description": name})
+            # The description is left empty rather than echoing the name: the
+            # resolver embeds "name (type): description", and identical
+            # descriptions across every entity push all embedding similarities
+            # toward 1.0, collapsing unrelated entities into one cluster.
+            entities.append({"name": name, "type": _guess_type(name, text), "description": ""})
             if len(entities) >= 20:
                 break
 
