@@ -292,12 +292,53 @@ def cmd_canvas(args: argparse.Namespace) -> int:
 
 
 def cmd_eval(args: argparse.Namespace) -> int:
-    """Run leave-one-out evaluation."""
+    """Run the leave-one-out evaluation."""
     config = load_config(args.config, args.vault)
-    logger.info("Running leave-one-out evaluation")
 
-    # TODO: Implement in M8
-    logger.warning("Eval command not yet implemented (M8)")
+    from whatif.embeddings import OllamaError, build_client
+    from whatif.eval import check_model_consistency, format_report, run_eval, write_report
+    from whatif.store import DecisionStore
+
+    if not config.vault.db_path.exists():
+        print(
+            f"No index found at {config.vault.db_path}. Run 'whatif index' first.",
+            file=sys.stderr,
+        )
+        return 1
+
+    store = DecisionStore(config.vault.db_path)
+    try:
+        client = build_client(config)
+        if not client.is_reachable():
+            raise OllamaError(
+                f"Cannot reach Ollama at {config.ollama.host}. "
+                "Start the server with 'ollama serve' and re-run."
+            )
+
+        report = run_eval(
+            config,
+            store,
+            embedder=client.embed,
+            threshold=args.threshold,
+        )
+        report.model_warning = check_model_consistency(store, config)
+    except OllamaError as exc:
+        print(f"Ollama unavailable: {exc}", file=sys.stderr)
+        return 1
+    except Exception as exc:  # noqa: BLE001
+        logger.error("Evaluation failed: %s", exc)
+        if getattr(args, "debug", False):
+            raise
+        print(f"Evaluation failed: {exc}", file=sys.stderr)
+        return 1
+    finally:
+        store.close()
+
+    print(format_report(report))
+
+    out_path = args.out or (config.vault.whatif_path / "eval-results.json")
+    write_report(report, out_path)
+    print(f"Results written to {out_path}")
     return 0
 
 
@@ -346,6 +387,14 @@ def build_parser() -> argparse.ArgumentParser:
     # eval
     p_eval = subparsers.add_parser("eval", help="Run leave-one-out evaluation")
     add_common_args(p_eval)
+    p_eval.add_argument(
+        "--threshold",
+        type=float,
+        help="Similarity a hit must reach (default: from whatif.toml)",
+    )
+    p_eval.add_argument(
+        "--out", type=Path, help="Output path (default: .whatif/eval-results.json)"
+    )
     p_eval.set_defaults(func=cmd_eval)
 
     return parser

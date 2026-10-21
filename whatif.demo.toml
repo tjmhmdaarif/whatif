@@ -1,0 +1,56 @@
+# WhatIf configuration for the offline demo.
+#
+# This config points at the stand-in server in scripts/fake_ollama.py, which
+# impersonates the Ollama API without running any model. It lets the whole
+# pipeline be exercised and demoed on a machine with no Ollama and no internet.
+#
+#   python scripts/fake_ollama.py 11434
+#
+# The model names below are the ones the stand-in reports itself under, so any
+# evaluation run that uses this config will name them in the report. A run
+# against real Ollama uses whatif.toml and will name nomic-embed-text instead.
+#
+# The hit rate produced with this config measures the harness, not the idea.
+# It is not a benchmark of the retrieval quality.
+
+[vault]
+path = "vault"
+decisions_dir = "Decisions"
+briefs_dir = "Briefs"
+canvases_dir = "Canvases"
+templates_dir = "Templates"
+whatif_dir = ".whatif"
+
+[models]
+llm_model = "standin-canned-llm"
+embed_model = "standin-hash-embed"
+
+[ollama]
+host = "http://localhost:11434"
+timeout = 120
+
+[index]
+content_hash_algo = "sha256"
+
+[retrieval]
+default_k = 5
+similarity_threshold = 0.3
+failed_assumption_threshold = 0.6
+
+[brief]
+max_retries = 1
+legend = """> **Legend**
+>
+> - `[EVIDENCE: note-id]` - a claim supported by a past decision that was retrieved
+> - `[ESTIMATE]` - a judgement with no supporting evidence in your notes
+> - `[UNVERIFIED]` - a claim that failed validation and could not be confirmed
+> - `COMPUTED` - a value calculated in code from your own scores and weights
+>
+> WhatIf does not predict outcomes. Nothing here is a probability."""
+
+[eval]
+leave_one_out = true
+
+[logging]
+level = "INFO"
+format = "%(levelname)s | %(name)s | %(message)s"

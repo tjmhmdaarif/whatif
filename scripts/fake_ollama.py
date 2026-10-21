@@ -10,16 +10,60 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
+import socket
 import sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 DIM = 32
 
+# The names this stand-in reports itself under. They are deliberately not the
+# names of the real models, so that a report produced against this server always
+# says which embedder produced it.
+STANDIN_EMBED_MODEL = "standin-hash-embed"
+STANDIN_LLM_MODEL = "standin-canned-llm"
+
+# Common English words carry no signal about what a decision was about. A real
+# embedding model does not confuse "the rest of the team would move to the new
+# tool" with "the extra tuition for in-person classes would be worth it", so the
+# stand-in drops stopwords too. Otherwise every pair of English sentences looks
+# 80% similar and the evaluation number means nothing.
+STOPWORDS = frozenset(
+    """
+    a an the and or but if then than that this these those there here
+    is are was were be been being am do does did doing have has had having
+    i me my mine we our ours you your yours he him his she her hers it its
+    they them their theirs who whom which what when where why how
+    in on at to for of with by from as into about over under again further
+    not no nor so too very can will just should now
+    would could shall may might must
+    one two three four five
+    s t don
+    """.split()
+)
+
+
+def content_words(text: str) -> list[str]:
+    """Return the meaningful words of a text, lowercased."""
+    words = []
+    for raw in text.lower().split():
+        word = raw.strip(".,!?;:'\"()[]")
+        if not word or word in STOPWORDS:
+            continue
+        words.append(word)
+    return words
+
 
 def fake_vector(text: str) -> list[float]:
-    digest = hashlib.sha256(text.encode("utf-8")).digest()
-    raw = [digest[i % len(digest)] / 255.0 for i in range(DIM)]
-    norm = sum(x * x for x in raw) ** 0.5 or 1.0
+    """Deterministic pseudo-embedding built from the content words."""
+    words = content_words(text)
+    raw = [0.0] * DIM
+    for word in words:
+        digest = hashlib.sha256(word.encode("utf-8")).digest()
+        raw[digest[0] % DIM] += digest[1] / 255.0
+    if not any(raw):
+        raw[0] = 1.0
+    norm = math.sqrt(sum(x * x for x in raw))
     return [x / norm for x in raw]
 
 
@@ -81,11 +125,15 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:
         if self.path == "/api/tags":
+            # The stand-in reports itself under its own name rather than claiming
+            # to be nomic-embed-text. Any evaluation run that uses it will name it
+            # in the report, so a reader can never mistake these numbers for
+            # numbers produced by a real embedding model.
             self._send(
                 {
                     "models": [
-                        {"name": "llama3.1:latest"},
-                        {"name": "nomic-embed-text:latest"},
+                        {"name": f"{STANDIN_EMBED_MODEL}:latest"},
+                        {"name": f"{STANDIN_LLM_MODEL}:latest"},
                     ]
                 }
             )
@@ -109,10 +157,28 @@ class Handler(BaseHTTPRequestHandler):
             self._send({"error": "not found"}, status=404)
 
 
+class DualStackServer(HTTPServer):
+    """HTTPServer that accepts both IPv6 and IPv4 loopback connections.
+
+    On Windows, ``localhost`` resolves to ``::1`` before ``127.0.0.1``. A plain
+    IPv4 server makes every request pay a connect timeout before falling back to
+    IPv4, which is slow enough to look like the tool is hanging.
+    """
+
+    address_family = socket.AF_INET6
+
+    def server_bind(self) -> None:
+        self.socket.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
+        super().server_bind()
+
+
 def main() -> int:
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 11434
-    server = HTTPServer(("127.0.0.1", port), Handler)
-    print(f"Fake Ollama listening on http://127.0.0.1:{server.server_port}")
+    try:
+        server = DualStackServer(("::1", port), Handler)
+    except OSError:
+        server = HTTPServer(("127.0.0.1", port), Handler)
+    print(f"Fake Ollama listening on http://localhost:{server.server_port}")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

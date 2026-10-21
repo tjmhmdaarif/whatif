@@ -21,6 +21,11 @@ from whatif.config import Config, create_default_config
 from whatif.embeddings import OllamaClient
 from whatif.store import DecisionStore
 
+# The stand-in server reports itself under these names so that no test result
+# can be mistaken for a run against a real embedding or language model.
+STANDIN_EMBED_MODEL = "standin-hash-embed"
+STANDIN_LLM_MODEL = "standin-canned-llm"
+
 
 def fake_vector(text: str, dim: int = 32) -> list[float]:
     """Deterministic pseudo-embedding derived from the text."""
@@ -82,11 +87,13 @@ class FakeOllamaHandler(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:  # noqa: N802
         if self.path == "/api/tags":
+            # The stand-in reports itself under its own names, so nothing in the
+            # test suite can be mistaken for a run against a real model.
             self._send(
                 {
                     "models": [
-                        {"name": "llama3.1:latest"},
-                        {"name": "nomic-embed-text:latest"},
+                        {"name": f"{STANDIN_EMBED_MODEL}:latest"},
+                        {"name": f"{STANDIN_LLM_MODEL}:latest"},
                     ]
                 }
             )
@@ -149,8 +156,8 @@ canvases_dir = "Canvases"
 whatif_dir = ".whatif"
 
 [models]
-llm_model = "llama3.1"
-embed_model = "nomic-embed-text"
+llm_model = "{STANDIN_LLM_MODEL}"
+embed_model = "{STANDIN_EMBED_MODEL}"
 
 [ollama]
 host = "{ollama_host}"
@@ -182,10 +189,10 @@ format = "%(levelname)s | %(name)s | %(message)s"
 
 class TestAgainstStandInServer:
     def test_client_lists_models(self, fake_ollama: str) -> None:
-        client = OllamaClient(host=fake_ollama, model="llama3.1")
+        client = OllamaClient(host=fake_ollama, model=STANDIN_EMBED_MODEL)
         assert client.is_reachable() is True
-        assert "llama3.1:latest" in client.list_models()
-        assert client.has_model("nomic-embed-text") is True
+        assert f"{STANDIN_EMBED_MODEL}:latest" in client.list_models()
+        assert client.has_model(STANDIN_EMBED_MODEL) is True
 
     def test_client_embeds(self, fake_ollama: str) -> None:
         client = OllamaClient(host=fake_ollama, model="nomic-embed-text")
@@ -260,8 +267,8 @@ class TestAgainstStandInServer:
 
         assert exit_code == 0, captured.out
         assert "[OK] Ollama server" in captured.out
-        assert "[OK] Model: llama3.1" in captured.out
-        assert "[OK] Model: nomic-embed-text" in captured.out
+        assert f"[OK] Model: {STANDIN_LLM_MODEL}" in captured.out
+        assert f"[OK] Model: {STANDIN_EMBED_MODEL}" in captured.out
         assert "[OK] Index database" in captured.out
 
     def test_doctor_fails_when_server_down(
