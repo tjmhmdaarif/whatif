@@ -174,7 +174,8 @@ def build_summary(
     """Build a deterministic one-line relevance summary for a note.
 
     The LLM can improve this in the brief, but retrieval needs something usable
-    on its own.
+    on its own. The options are left out on purpose: they make the line too long
+    for a table cell, and they are shown next to the note elsewhere.
     """
     parts: list[str] = []
     if domain:
@@ -184,11 +185,6 @@ def build_summary(
     headline = first_sentence(body)
     if headline:
         parts.append(headline)
-    if options:
-        options_text = " vs ".join(options)
-        parts.append(f"options: {options_text}")
-    if chosen:
-        parts.append(f"chose: {chosen}")
     # ASCII separator: this text is printed to terminals as well as written into
     # Markdown, and em dashes render as mojibake on Windows consoles.
     return " - ".join(parts)

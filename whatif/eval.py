@@ -28,6 +28,7 @@ from typing import Any, Iterable, Sequence
 import numpy as np
 
 from whatif.config import Config
+from whatif.embeddings import OllamaError
 from whatif.notes import Decision, parse_all_decisions
 from whatif.retrieve import FailedAssumption, Retriever, cosine_similarity
 from whatif.store import DecisionStore, decision_text
@@ -350,6 +351,10 @@ def run_eval(
                 assumption_k=assumption_k,
                 stored_vectors=stored_vectors,
             )
+        except OllamaError:
+            # The model is unavailable. That is not a per-note failure, it is the
+            # whole run failing, so it is raised rather than counted as a miss.
+            raise
         except Exception as exc:  # noqa: BLE001 - one bad note must not stop the run
             logger.error("Failed to evaluate %s: %s", decision.id, exc)
             report.notes_skipped += 1

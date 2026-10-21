@@ -187,8 +187,18 @@ class TestSummaryHelpers:
         )
         assert "study" in summary
         assert "2026-01-15" in summary
-        assert "options: A vs B" in summary
-        assert "chose: A" in summary
+        assert "A real context sentence here." in summary
+
+    def test_build_summary_stays_short(self) -> None:
+        """The summary lands in a table cell, so it must not carry the options."""
+        summary = build_summary(
+            "2026-01-15-x", "study", "2026-01-15", "A real context sentence here.",
+            ["A very long option name indeed", "Another long option name"],
+            "A very long option name indeed",
+        )
+        assert "options:" not in summary
+        assert "chose:" not in summary
+        assert len(summary) < 120
 
 
 class TestSimilarDecisions:
