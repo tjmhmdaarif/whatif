@@ -112,6 +112,17 @@ Every command accepts `--vault`, `--config`, `-v/--verbose` and `--debug`.
 
 ### The local web interface
 
+The fastest way in, if you do not have Ollama installed:
+
+```bash
+python scripts/demo.py
+```
+
+That starts a stand-in Ollama server, indexes the vault and serves the interface.
+It detects a real Ollama already running and leaves it alone.
+
+Or, with Ollama running:
+
 ```bash
 whatif serve --vault ./vault --port 8765
 ```
