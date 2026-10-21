@@ -10,6 +10,12 @@ that labels every claim as evidence or estimate.
 Everything runs on your machine. No accounts, no cloud calls, no telemetry. The only
 network traffic is to a local Ollama server.
 
+<p align="center">
+  <img src="promo/poster.jpg" width="640" alt="WhatIf — your past decisions, warning you about the next one">
+</p>
+
+**Watch the commercial (1:45):** [`promo/whatif-promo.webm`](promo/whatif-promo.webm)
+
 ---
 
 ## The problem
@@ -361,7 +367,10 @@ tests/                  pytest suite, 404 tests
   fixtures/decisions/   10 seed decision notes
 scripts/
   fake_ollama.py        stand-in Ollama server for offline work
+  demo.py               one-command demo: server + index + web interface
+  extract_frames.py     pull stills out of the promotional video
   inspect_*.py          small tools for looking at the output
+promo/                  the promotional video and the page it is built from
 vault/                  a working vault with the seed notes
 docs/eval-results.json  the output of an evaluation run
 ```

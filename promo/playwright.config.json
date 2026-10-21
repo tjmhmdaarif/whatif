@@ -1,0 +1,12 @@
+{
+  "browser": {
+    "viewport": { "width": 1920, "height": 1080 },
+    "contextOptions": {
+      "viewport": { "width": 1920, "height": 1080 },
+      "deviceScaleFactor": 1,
+      "recordVideo": {
+        "size": { "width": 1920, "height": 1080 }
+      }
+    }
+  }
+}
