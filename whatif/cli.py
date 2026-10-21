@@ -266,15 +266,28 @@ def cmd_canvas(args: argparse.Namespace) -> int:
     """Generate an Obsidian Canvas for a decision."""
     config = load_config(args.config, args.vault)
 
-    note_path = Path(args.note).expanduser().resolve()
-    if not note_path.exists():
-        logger.error(f"Note not found: {note_path}")
+    from whatif.canvas import write_canvas
+    from whatif.notes import parse_decision_file
+
+    note_path = _resolve_note_path(args.note, config)
+    if note_path is None:
         return 1
 
-    logger.info(f"Generating canvas for {note_path}")
+    result = parse_decision_file(note_path)
+    if result.decision is None:
+        print(f"Could not parse the note: {result.error}", file=sys.stderr)
+        return 1
 
-    # TODO: Implement in M7
-    logger.warning("Canvas command not yet implemented (M7)")
+    try:
+        out_path = write_canvas(result.decision, config, args.out)
+    except Exception as exc:  # noqa: BLE001
+        logger.error("Canvas export failed: %s", exc)
+        if getattr(args, "debug", False):
+            raise
+        print(f"Canvas export failed: {exc}", file=sys.stderr)
+        return 1
+
+    print(f"Canvas written to {out_path}")
     return 0
 
 
@@ -326,7 +339,8 @@ def build_parser() -> argparse.ArgumentParser:
     # canvas
     p_canvas = subparsers.add_parser("canvas", help="Generate an Obsidian Canvas")
     add_common_args(p_canvas)
-    p_canvas.add_argument("note", help="Path to decision note")
+    p_canvas.add_argument("note", help="Path to decision note or its id")
+    p_canvas.add_argument("--out", type=Path, help="Output path (default: Canvases/<id>.canvas)")
     p_canvas.set_defaults(func=cmd_canvas)
 
     # eval

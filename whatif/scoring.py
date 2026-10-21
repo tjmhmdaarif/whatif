@@ -202,7 +202,8 @@ def compute_scores(decision: Decision) -> ScoringResult:
 
     if not decision.scores:
         result.warnings.append("No scores entered, so options cannot be compared.")
-        return result
+        # Fall through: the options are still built so the brief and the canvas can
+        # show which options exist and that they are unscored.
 
     # Per-criterion view.
     for criterion in decision.criteria:

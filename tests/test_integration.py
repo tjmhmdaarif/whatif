@@ -366,6 +366,65 @@ class TestAgainstStandInServer:
         assert exit_code == 0, captured.err
         assert (seeded_vault / "Briefs" / "2026-10-01-certification-vs-project.md").exists()
 
+    def test_canvas_command_end_to_end(
+        self, fake_ollama: str, seeded_vault: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        config_path = write_config(seeded_vault, fake_ollama)
+        note = seeded_vault / "Decisions" / "2026-09-14-side-project-build.md"
+
+        exit_code = main(["canvas", str(note), "--config", str(config_path)])
+        captured = capsys.readouterr()
+
+        assert exit_code == 0, captured.err
+        canvas_path = seeded_vault / "Canvases" / "2026-09-14-side-project-build.canvas"
+        assert canvas_path.exists()
+
+        payload = json.loads(canvas_path.read_text(encoding="utf-8"))
+        assert "nodes" in payload
+        assert "edges" in payload
+
+        # One node per option, plus the root, plus assumptions and risks.
+        option_texts = [
+            n["text"] for n in payload["nodes"] if n.get("text", "").startswith("### ")
+        ]
+        assert len(option_texts) == 2
+        assert any("Build in Python" in t for t in option_texts)
+        assert any("Build in TypeScript" in t for t in option_texts)
+
+        # The root is a file node pointing at the decision.
+        roots = [n for n in payload["nodes"] if n["type"] == "file"]
+        assert len(roots) == 1
+        assert roots[0]["file"] == "Decisions/2026-09-14-side-project-build.md"
+
+        # Every edge points at a node that exists.
+        node_ids = {n["id"] for n in payload["nodes"]}
+        for edge in payload["edges"]:
+            assert edge["fromNode"] in node_ids
+            assert edge["toNode"] in node_ids
+
+    def test_canvas_command_needs_no_index(
+        self, fake_ollama: str, seeded_vault: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        """Canvas export is pure code, so it must work without an index."""
+        config_path = write_config(seeded_vault, fake_ollama)
+        note = seeded_vault / "Decisions" / "2026-09-14-side-project-build.md"
+
+        exit_code = main(["canvas", str(note), "--config", str(config_path)])
+        captured = capsys.readouterr()
+
+        assert exit_code == 0, captured.err
+        assert (seeded_vault / "Canvases" / "2026-09-14-side-project-build.canvas").exists()
+
+    def test_canvas_command_reports_a_missing_note(
+        self, fake_ollama: str, seeded_vault: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        config_path = write_config(seeded_vault, fake_ollama)
+        exit_code = main(["canvas", "no-such-note", "--config", str(config_path)])
+        captured = capsys.readouterr()
+
+        assert exit_code == 1
+        assert "Note not found" in captured.err
+
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
