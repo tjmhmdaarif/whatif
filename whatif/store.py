@@ -23,7 +23,7 @@ from whatif.notes import Decision, parse_all_decisions
 
 logger = logging.getLogger(__name__)
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS meta (
@@ -60,8 +60,20 @@ CREATE TABLE IF NOT EXISTS embeddings (
     FOREIGN KEY (note_id) REFERENCES notes(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS assumption_embeddings (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    note_id    TEXT NOT NULL,
+    assumption TEXT NOT NULL,
+    vector     BLOB NOT NULL,
+    dim        INTEGER NOT NULL,
+    created_at TEXT NOT NULL,
+    UNIQUE (note_id, assumption),
+    FOREIGN KEY (note_id) REFERENCES notes(id) ON DELETE CASCADE
+);
+
 CREATE INDEX IF NOT EXISTS idx_notes_status ON notes(status);
 CREATE INDEX IF NOT EXISTS idx_notes_domain ON notes(domain);
+CREATE INDEX IF NOT EXISTS idx_assumption_note ON assumption_embeddings(note_id);
 """
 
 
@@ -277,6 +289,70 @@ class DecisionStore:
         rows = self.conn.execute("SELECT note_id FROM embeddings ORDER BY note_id").fetchall()
         return [row["note_id"] for row in rows]
 
+    # -- assumption embeddings ---------------------------------------------
+
+    def set_assumption_embedding(
+        self, note_id: str, assumption: str, vector: list[float]
+    ) -> None:
+        """Store the embedding of a single assumption belonging to a note."""
+        self.conn.execute(
+            """
+            INSERT INTO assumption_embeddings (note_id, assumption, vector, dim, created_at)
+            VALUES (?, ?, ?, ?, ?)
+            ON CONFLICT(note_id, assumption) DO UPDATE SET
+                vector = excluded.vector,
+                dim = excluded.dim,
+                created_at = excluded.created_at
+            """,
+            (note_id, assumption, vector_to_blob(vector), len(list(vector)), utc_now()),
+        )
+        self.conn.commit()
+
+    def get_assumption_embeddings(self) -> list[dict[str, Any]]:
+        """Return every stored assumption embedding with its vector."""
+        rows = self.conn.execute(
+            "SELECT note_id, assumption, vector FROM assumption_embeddings ORDER BY note_id, id"
+        ).fetchall()
+        return [
+            {
+                "note_id": row["note_id"],
+                "assumption": row["assumption"],
+                "vector": blob_to_vector(row["vector"]),
+            }
+            for row in rows
+        ]
+
+    def get_assumption_embeddings_for(self, note_id: str) -> list[dict[str, Any]]:
+        """Return the assumption embeddings belonging to one note."""
+        rows = self.conn.execute(
+            "SELECT note_id, assumption, vector FROM assumption_embeddings "
+            "WHERE note_id = ? ORDER BY id",
+            (note_id,),
+        ).fetchall()
+        return [
+            {
+                "note_id": row["note_id"],
+                "assumption": row["assumption"],
+                "vector": blob_to_vector(row["vector"]),
+            }
+            for row in rows
+        ]
+
+    def delete_assumption_embeddings(self, note_id: str) -> int:
+        """Delete all assumption embeddings for a note. Returns the row count."""
+        cursor = self.conn.execute(
+            "DELETE FROM assumption_embeddings WHERE note_id = ?", (note_id,)
+        )
+        self.conn.commit()
+        return cursor.rowcount
+
+    def count_assumption_embeddings(self) -> int:
+        """Return the number of stored assumption embeddings."""
+        row = self.conn.execute(
+            "SELECT COUNT(*) AS n FROM assumption_embeddings"
+        ).fetchone()
+        return int(row["n"])
+
     def count(self) -> int:
         """Return the number of stored notes."""
         row = self.conn.execute("SELECT COUNT(*) AS n FROM notes").fetchone()
@@ -371,6 +447,14 @@ def index_decisions(
                 if not vector:
                     raise ValueError("embedder returned an empty vector")
                 store.upsert_note(decision, embedding=vector, model=embed_model)
+
+                # Embed the assumptions that actually failed, so they can be matched
+                # semantically against a new decision's assumptions.
+                failed = decision.outcome.get("failed_assumptions", []) or []
+                store.delete_assumption_embeddings(decision.id)
+                for assumption in failed:
+                    store.set_assumption_embedding(decision.id, assumption, embedder(assumption))
+
                 stats.indexed += 1
                 logger.info("Indexed %s", decision.id)
             except Exception as exc:  # noqa: BLE001 - one bad note must not stop the run

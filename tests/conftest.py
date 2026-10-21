@@ -8,6 +8,20 @@ from typing import Generator
 
 import pytest
 
+# This repository also hosts an unrelated project (a GraphRAG prototype) whose
+# test modules import a `graphrag` package that is not installed. Skip them during
+# collection so `pytest` runs clean for the WhatIf suite.
+collect_ignore = [
+    "test_chunker.py",
+    "test_data_loader.py",
+    "test_extraction.py",
+    "test_extractive_client.py",
+    "test_graph_store.py",
+    "test_metrics.py",
+    "test_retrieval.py",
+    "test_vector_store.py",
+]
+
 
 @pytest.fixture
 def temp_dir() -> Generator[Path, None, None]:

@@ -2,7 +2,7 @@
 # All paths are relative to the vault root unless absolute
 
 [vault]
-path = "."
+path = "vault"
 decisions_dir = "Decisions"
 briefs_dir = "Briefs"
 canvases_dir = "Canvases"

@@ -110,6 +110,23 @@ llm_model = "test-model"
         assert config.vault.path == Path("/test/vault").resolve()
         assert config.models.llm_model == "test-model"
 
+    def test_relative_vault_path_resolves_against_config_dir(self) -> None:
+        """A relative vault path must not depend on the current working directory."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmpdir_path = Path(tmpdir)
+            config_path = tmpdir_path / "whatif.toml"
+            config_path.write_text('[vault]\npath = "myvault"\n')
+
+            config = Config.from_file(config_path)
+            assert config.vault.path == (tmpdir_path / "myvault").resolve()
+
+    def test_absolute_vault_path_is_untouched(self) -> None:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".toml", delete=False) as f:
+            f.write('[vault]\npath = "/abs/vault"\n')
+            f.flush()
+            config = Config.from_file(f.name)
+        assert config.vault.path == Path("/abs/vault").resolve()
+
     def test_missing_file_raises(self) -> None:
         with pytest.raises(FileNotFoundError):
             Config.from_file("/nonexistent/path.toml")

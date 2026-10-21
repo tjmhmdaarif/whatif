@@ -53,6 +53,10 @@ class CountingEmbedder:
         return self.inner(text)
 
 
+# The seed data contains 11 failed assumptions across 6 decided notes.
+FAILED_ASSUMPTION_COUNT = 11
+
+
 @pytest.fixture
 def store(temp_dir: Path) -> DecisionStore:
     store = DecisionStore(temp_dir / ".whatif" / "index.sqlite")
@@ -229,7 +233,8 @@ class TestIndexDecisions:
         assert stats.skipped == 0
         assert stats.failed == 0
         assert stats.errors == []
-        assert len(embedder.calls) == 10
+        # 10 note embeddings + 11 failed-assumption embeddings.
+        assert len(embedder.calls) == 10 + FAILED_ASSUMPTION_COUNT
 
     def test_second_run_skips_unchanged(self, vault_with_seeds: Path) -> None:
         config = create_default_config(vault_with_seeds)
@@ -241,7 +246,8 @@ class TestIndexDecisions:
         assert first.indexed == 10
         assert second.indexed == 0
         assert second.skipped == 10
-        assert len(embedder.calls) == 10  # no re-embedding
+        # No re-embedding on the second run.
+        assert len(embedder.calls) == 10 + FAILED_ASSUMPTION_COUNT
 
     def test_changed_note_is_reindexed(self, vault_with_seeds: Path) -> None:
         config = create_default_config(vault_with_seeds)
@@ -257,7 +263,8 @@ class TestIndexDecisions:
         stats = index_decisions(config, embedder=embedder)
         assert stats.indexed == 1
         assert stats.skipped == 9
-        assert len(embedder.calls) == 11
+        # The changed note is re-embedded, along with its 2 failed assumptions.
+        assert len(embedder.calls) == 10 + FAILED_ASSUMPTION_COUNT + 3
 
     def test_writes_to_database(self, vault_with_seeds: Path) -> None:
         config = create_default_config(vault_with_seeds)

@@ -148,7 +148,11 @@ class Config:
 
     @classmethod
     def from_file(cls, path: Path | str) -> Config:
-        """Load configuration from a TOML file."""
+        """Load configuration from a TOML file.
+
+        A relative ``vault.path`` is resolved against the directory holding the
+        config file, so a config can be used from any working directory.
+        """
         path = Path(path).expanduser().resolve()
         if not path.exists():
             raise FileNotFoundError(f"Config file not found: {path}")
@@ -156,7 +160,14 @@ class Config:
         with path.open("rb") as f:
             data = tomllib.load(f)
 
-        return cls.from_dict(data)
+        config = cls.from_dict(data)
+
+        # Resolve a relative vault path against the config file's directory.
+        raw_vault_path = Path(data.get("vault", {}).get("path", "."))
+        if not raw_vault_path.is_absolute():
+            config.vault.path = (path.parent / raw_vault_path).resolve()
+
+        return config
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> Config:
