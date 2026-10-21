@@ -122,6 +122,35 @@ animated graph, the retrieval, the computed scoring, and the evaluation.
 
 Keyboard: `/` focuses the filter, `j` / `k` move between decisions, `g` cycles tabs.
 
+![The brief view](docs/screenshots/brief.png)
+
+The brief is rendered from the same file that lands in `Briefs/`. Tags are colour
+coded, the weighted table is marked `COMPUTED`, and the counterargument names the
+option it is arguing against.
+
+![The canvas view](docs/screenshots/canvas.png)
+
+The canvas view draws the same JSON that Obsidian reads, but as an animated graph.
+The root node is the decision, each option carries its computed total and criterion
+breakdown, and the shared assumption and risk nodes sit below.
+
+![The retrieval view](docs/screenshots/retrieval.png)
+
+Retrieval shows the similarity of every candidate and marks which past failures
+clear the threshold a brief would apply, so it is obvious what a brief would and
+would not have shown.
+
+![The scoring view](docs/screenshots/scoring.png)
+
+The scoring view compares the options criterion by criterion. The leading option is
+highlighted, which makes the trade-off visible: here the bootcamp wins the
+weight-5 criterion and loses everything else.
+
+![The evaluation view](docs/screenshots/evaluation.png)
+
+The evaluation view names the embedder that produced the numbers, because a hit
+rate without that context is not a result.
+
 ## The note format
 
 ```yaml
