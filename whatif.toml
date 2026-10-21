@@ -1,0 +1,40 @@
+# WhatIf configuration
+# All paths are relative to the vault root unless absolute
+
+[vault]
+path = "."
+decisions_dir = "Decisions"
+briefs_dir = "Briefs"
+canvases_dir = "Canvases"
+whatif_dir = ".whatif"
+
+[models]
+llm_model = "llama3.1"
+embed_model = "nomic-embed-text"
+
+[ollama]
+host = "http://localhost:11434"
+timeout = 120
+
+[index]
+content_hash_algo = "sha256"
+
+[retrieval]
+default_k = 5
+similarity_threshold = 0.3
+failed_assumption_threshold = 0.6
+
+[brief]
+max_retries = 1
+legend = """Legend:
+  [EVIDENCE: note-id] — Claim supported by a retrieved decision note
+  [ESTIMATE]          — Reasoned judgment without direct evidence
+  [UNVERIFIED]        — Claim that failed tag validation after retry
+  COMPUTED            — Values calculated from your scores and weights (never LLM-generated)"""
+
+[eval]
+leave_one_out = true
+
+[logging]
+level = "INFO"
+format = "%(levelname)s | %(name)s | %(message)s"

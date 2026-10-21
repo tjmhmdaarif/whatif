@@ -55,3 +55,10 @@ Thumbs.db
 .playwright-cli/
 .playwright-mcp/
 .streamlit/secrets.toml
+
+# WhatIf local data (index database, generated output)
+vault/.whatif/
+*.sqlite
+*.sqlite-journal
+vault/Briefs/*.md
+vault/Canvases/*.canvas
