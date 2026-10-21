@@ -9,11 +9,11 @@ chosen: Accept the internship
 criteria:
   - {name: career_impact, weight: 4}
   - {name: income, weight: 2}
-  - {name: time_cost, weight: 2}
+  - {name: free_time_left, weight: 2}
   - {name: flexibility, weight: 1}
 scores:
-  Accept the internship: {career_impact: 5, income: 4, time_cost: 2, flexibility: 1}
-  Decline and keep the summer for coursework: {career_impact: 2, income: 1, time_cost: 5, flexibility: 4}
+  Accept the internship: {career_impact: 5, income: 4, free_time_left: 2, flexibility: 1}
+  Decline and keep the summer for coursework: {career_impact: 2, income: 1, free_time_left: 5, flexibility: 4}
 assumptions:
   - The internship would convert into a full-time offer, making the extra time worth it
   - The work would be close enough to what I want to do long term

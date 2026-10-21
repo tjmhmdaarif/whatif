@@ -7,13 +7,13 @@ domain: study
 options: ["Exchange semester abroad", "Stay and take extra electives"]
 chosen: Exchange semester abroad
 criteria:
-  - {name: academic_credit, weight: 3}
-  - {name: cost, weight: 3}
-  - {name: language_improvement, weight: 2}
-  - {name: personal_growth, weight: 2}
+  - {name: academic_credit, weight: 2}
+  - {name: price, weight: 2}
+  - {name: language_improvement, weight: 4}
+  - {name: personal_growth, weight: 3}
 scores:
-  "Exchange semester abroad": {academic_credit: 3, cost: 2, language_improvement: 5, personal_growth: 5}
-  "Stay and take extra electives": {academic_credit: 5, cost: 5, language_improvement: 1, personal_growth: 2}
+  "Exchange semester abroad": {academic_credit: 3, price: 2, language_improvement: 5, personal_growth: 5}
+  "Stay and take extra electives": {academic_credit: 5, price: 5, language_improvement: 1, personal_growth: 2}
 assumptions:
   - Credits from abroad would transfer back to my program without extra paperwork
   - Living costs would stay the same as a semester at home

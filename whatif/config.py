@@ -114,6 +114,10 @@ domain: other
 options: []
 chosen:
 criteria:
+  # weight is how much this criterion matters to you.
+  # Scores run 1-5, where 5 is always the BEST outcome for you on that criterion.
+  # Name criteria so the direction is obvious: price (5 = cheapest),
+  # free_time_left (5 = most time left), not cost (which one is better?).
   - {name: criterion1, weight: 1}
 scores: {}
 assumptions: []

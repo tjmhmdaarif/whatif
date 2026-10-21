@@ -9,11 +9,11 @@ chosen: Obsidian vault
 criteria:
   - {name: collaboration, weight: 3}
   - {name: data_ownership, weight: 3}
-  - {name: setup_cost, weight: 2}
+  - {name: setup_ease, weight: 2}
   - {name: offline_availability, weight: 2}
 scores:
-  Obsidian vault: {collaboration: 1, data_ownership: 5, setup_cost: 4, offline_availability: 5}
-  Notion workspace: {collaboration: 5, data_ownership: 2, setup_cost: 4, offline_availability: 2}
+  Obsidian vault: {collaboration: 1, data_ownership: 5, setup_ease: 4, offline_availability: 5}
+  Notion workspace: {collaboration: 5, data_ownership: 2, setup_ease: 4, offline_availability: 2}
 assumptions:
   - The rest of the team would move to the new tool and keep using it
   - I would not need to maintain a second copy of shared documents

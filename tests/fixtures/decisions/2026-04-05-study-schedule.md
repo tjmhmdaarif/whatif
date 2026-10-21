@@ -9,11 +9,11 @@ chosen: Morning study block
 criteria:
   - {name: focus_quality, weight: 3}
   - {name: consistency, weight: 3}
-  - {name: impact_on_sleep, weight: 2}
-  - {name: social_cost, weight: 1}
+  - {name: sleep_quality, weight: 2}
+  - {name: evening_freedom, weight: 1}
 scores:
-  Morning study block: {focus_quality: 4, consistency: 3, impact_on_sleep: 4, social_cost: 4}
-  Evening study block: {focus_quality: 3, consistency: 2, impact_on_sleep: 2, social_cost: 3}
+  Morning study block: {focus_quality: 4, consistency: 3, sleep_quality: 4, evening_freedom: 4}
+  Evening study block: {focus_quality: 3, consistency: 2, sleep_quality: 2, evening_freedom: 3}
 assumptions:
   - Morning sessions would be easier to keep up once started
   - My sleep would not suffer from an earlier start

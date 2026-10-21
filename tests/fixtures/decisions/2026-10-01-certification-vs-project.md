@@ -7,13 +7,13 @@ domain: career
 options: [Professional certification, Open-source contribution]
 chosen: Professional certification
 criteria:
-  - {name: signal_to_recruiters, weight: 3}
-  - {name: skill_growth, weight: 3}
-  - {name: time_cost, weight: 2}
-  - {name: portfolio_evidence, weight: 2}
+  - {name: signal_to_recruiters, weight: 4}
+  - {name: skill_growth, weight: 2}
+  - {name: free_time_left, weight: 2}
+  - {name: portfolio_evidence, weight: 1}
 scores:
-  Professional certification: {signal_to_recruiters: 4, skill_growth: 2, time_cost: 4, portfolio_evidence: 1}
-  Open-source contribution: {signal_to_recruiters: 2, skill_growth: 5, time_cost: 2, portfolio_evidence: 5}
+  Professional certification: {signal_to_recruiters: 5, skill_growth: 2, free_time_left: 4, portfolio_evidence: 1}
+  Open-source contribution: {signal_to_recruiters: 2, skill_growth: 5, free_time_left: 3, portfolio_evidence: 5}
 assumptions:
   - A certificate would pass the resume screen on its own
   - The exam voucher would cover the full cost

@@ -7,13 +7,13 @@ domain: study
 options: [In-person bootcamp, Self-paced online course]
 chosen: In-person bootcamp
 criteria:
-  - {name: cost, weight: 3}
-  - {name: career_support, weight: 3}
-  - {name: time_commitment, weight: 2}
+  - {name: price, weight: 1}
+  - {name: career_support, weight: 5}
+  - {name: free_time_left, weight: 2}
   - {name: flexibility, weight: 1}
 scores:
-  In-person bootcamp: {cost: 2, career_support: 5, time_commitment: 2, flexibility: 1}
-  Self-paced online course: {cost: 5, career_support: 2, time_commitment: 4, flexibility: 5}
+  In-person bootcamp: {price: 2, career_support: 5, free_time_left: 2, flexibility: 1}
+  Self-paced online course: {price: 5, career_support: 2, free_time_left: 5, flexibility: 5}
 assumptions:
   - The extra tuition for in-person classes would be worth it because of the networking and job placement
   - The full-time schedule would leave enough room for my other coursework

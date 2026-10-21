@@ -7,8 +7,8 @@ domain: tools
 options: [Refurbished ThinkPad, New ultrabook]
 chosen: New ultrabook
 criteria:
-  - {name: price, weight: 3}
-  - {name: battery_life, weight: 3}
+  - {name: price, weight: 1}
+  - {name: battery_life, weight: 5}
   - {name: repairability, weight: 2}
   - {name: performance, weight: 2}
 scores:
