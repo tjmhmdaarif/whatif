@@ -1,0 +1,536 @@
+{
+  "generated_at": "2026-10-21T09:44:55+00:00",
+  "threshold": 0.6,
+  "hits": 0,
+  "total": 6,
+  "hit_rate": 0.0,
+  "notes_total": 10,
+  "notes_skipped": 4,
+  "skipped_reasons": {
+    "no_failed_assumptions": 2,
+    "not_decided": 2
+  },
+  "model_warning": "",
+  "embed_model": "standin-hash-embed",
+  "llm_model": "standin-canned-llm",
+  "rates_by_threshold": [
+    {
+      "threshold": 0.4,
+      "hits": 3,
+      "total": 6,
+      "rate": 0.5
+    },
+    {
+      "threshold": 0.5,
+      "hits": 1,
+      "total": 6,
+      "rate": 0.1667
+    },
+    {
+      "threshold": 0.6,
+      "hits": 0,
+      "total": 6,
+      "rate": 0.0
+    },
+    {
+      "threshold": 0.7,
+      "hits": 0,
+      "total": 6,
+      "rate": 0.0
+    },
+    {
+      "threshold": 0.8,
+      "hits": 0,
+      "total": 6,
+      "rate": 0.0
+    }
+  ],
+  "cases": [
+    {
+      "note_id": "2026-01-15-course-choice",
+      "domain": "study",
+      "hit": false,
+      "best_match": 0.6141,
+      "best_match_true": "The extra tuition for in-person classes would be worth it because of the networking and job placement",
+      "best_match_surfaced": "The internship would convert into a full-time offer, making the extra time worth it",
+      "best_match_source": "2026-06-18-internship",
+      "surfaced_count": 0,
+      "retrieved_count": 9,
+      "true_failed_assumptions": [
+        "The extra tuition for in-person classes would be worth it because of the networking and job placement",
+        "The full-time schedule would leave enough room for my other coursework"
+      ],
+      "surfaced": [
+        {
+          "text": "Living costs would stay the same as a semester at home",
+          "source_note_id": "2026-08-30-exchange-semester",
+          "query_similarity": 0.5506,
+          "best_match": 0.4377,
+          "best_match_text": "The full-time schedule would leave enough room for my other coursework"
+        },
+        {
+          "text": "The internship would convert into a full-time offer, making the extra time worth it",
+          "source_note_id": "2026-06-18-internship",
+          "query_similarity": 0.4731,
+          "best_match": 0.6141,
+          "best_match_text": "The extra tuition for in-person classes would be worth it because of the networking and job placement"
+        },
+        {
+          "text": "Credits from abroad would transfer back to my program without extra paperwork",
+          "source_note_id": "2026-08-30-exchange-semester",
+          "query_similarity": 0.3759,
+          "best_match": 0.4552,
+          "best_match_text": "The extra tuition for in-person classes would be worth it because of the networking and job placement"
+        },
+        {
+          "text": "The rest of the team would move to the new tool and keep using it",
+          "source_note_id": "2026-05-12-tool-stack",
+          "query_similarity": 0.3406,
+          "best_match": 0.3903,
+          "best_match_text": "The full-time schedule would leave enough room for my other coursework"
+        },
+        {
+          "text": "I would not need to maintain a second copy of shared documents",
+          "source_note_id": "2026-05-12-tool-stack",
+          "query_similarity": 0.2527,
+          "best_match": 0.3109,
+          "best_match_text": "The extra tuition for in-person classes would be worth it because of the networking and job placement"
+        },
+        {
+          "text": "I would have enough free time each week to lead the meetings and run the events",
+          "source_note_id": "2026-03-10-club-role",
+          "query_similarity": 0.2499,
+          "best_match": 0.2487,
+          "best_match_text": "The extra tuition for in-person classes would be worth it because of the networking and job placement"
+        },
+        {
+          "text": "The other members would handle their assigned tasks without chasing",
+          "source_note_id": "2026-03-10-club-role",
+          "query_similarity": 0.2306,
+          "best_match": 0.091,
+          "best_match_text": "The extra tuition for in-person classes would be worth it because of the networking and job placement"
+        },
+        {
+          "text": "I could still prepare for the fall exams in August",
+          "source_note_id": "2026-06-18-internship",
+          "query_similarity": 0.1837,
+          "best_match": 0.1393,
+          "best_match_text": "The extra tuition for in-person classes would be worth it because of the networking and job placement"
+        },
+        {
+          "text": "A certificate would pass the resume screen on its own",
+          "source_note_id": "2026-10-01-certification-vs-project",
+          "query_similarity": 0.121,
+          "best_match": 0.0916,
+          "best_match_text": "The extra tuition for in-person classes would be worth it because of the networking and job placement"
+        }
+      ]
+    },
+    {
+      "note_id": "2026-03-10-club-role",
+      "domain": "career",
+      "hit": false,
+      "best_match": 0.5049,
+      "best_match_true": "The other members would handle their assigned tasks without chasing",
+      "best_match_surfaced": "The internship would convert into a full-time offer, making the extra time worth it",
+      "best_match_source": "2026-06-18-internship",
+      "surfaced_count": 0,
+      "retrieved_count": 9,
+      "true_failed_assumptions": [
+        "I would have enough free time each week to lead the meetings and run the events",
+        "The other members would handle their assigned tasks without chasing"
+      ],
+      "surfaced": [
+        {
+          "text": "The internship would convert into a full-time offer, making the extra time worth it",
+          "source_note_id": "2026-06-18-internship",
+          "query_similarity": 0.3846,
+          "best_match": 0.5049,
+          "best_match_text": "The other members would handle their assigned tasks without chasing"
+        },
+        {
+          "text": "I could still prepare for the fall exams in August",
+          "source_note_id": "2026-06-18-internship",
+          "query_similarity": 0.3844,
+          "best_match": 0.3363,
+          "best_match_text": "I would have enough free time each week to lead the meetings and run the events"
+        },
+        {
+          "text": "A certificate would pass the resume screen on its own",
+          "source_note_id": "2026-10-01-certification-vs-project",
+          "query_similarity": 0.2959,
+          "best_match": 0.4098,
+          "best_match_text": "I would have enough free time each week to lead the meetings and run the events"
+        },
+        {
+          "text": "The extra tuition for in-person classes would be worth it because of the networking and job placement",
+          "source_note_id": "2026-01-15-course-choice",
+          "query_similarity": 0.1978,
+          "best_match": 0.2487,
+          "best_match_text": "I would have enough free time each week to lead the meetings and run the events"
+        },
+        {
+          "text": "The rest of the team would move to the new tool and keep using it",
+          "source_note_id": "2026-05-12-tool-stack",
+          "query_similarity": 0.196,
+          "best_match": 0.1893,
+          "best_match_text": "I would have enough free time each week to lead the meetings and run the events"
+        },
+        {
+          "text": "Living costs would stay the same as a semester at home",
+          "source_note_id": "2026-08-30-exchange-semester",
+          "query_similarity": 0.1903,
+          "best_match": 0.2405,
+          "best_match_text": "The other members would handle their assigned tasks without chasing"
+        },
+        {
+          "text": "I would not need to maintain a second copy of shared documents",
+          "source_note_id": "2026-05-12-tool-stack",
+          "query_similarity": 0.1261,
+          "best_match": 0.1961,
+          "best_match_text": "I would have enough free time each week to lead the meetings and run the events"
+        },
+        {
+          "text": "Credits from abroad would transfer back to my program without extra paperwork",
+          "source_note_id": "2026-08-30-exchange-semester",
+          "query_similarity": 0.1192,
+          "best_match": 0.1778,
+          "best_match_text": "The other members would handle their assigned tasks without chasing"
+        },
+        {
+          "text": "The full-time schedule would leave enough room for my other coursework",
+          "source_note_id": "2026-01-15-course-choice",
+          "query_similarity": 0.0557,
+          "best_match": 0.0763,
+          "best_match_text": "I would have enough free time each week to lead the meetings and run the events"
+        }
+      ]
+    },
+    {
+      "note_id": "2026-05-12-tool-stack",
+      "domain": "tools",
+      "hit": false,
+      "best_match": 0.4098,
+      "best_match_true": "The rest of the team would move to the new tool and keep using it",
+      "best_match_surfaced": "A certificate would pass the resume screen on its own",
+      "best_match_source": "2026-10-01-certification-vs-project",
+      "surfaced_count": 0,
+      "retrieved_count": 9,
+      "true_failed_assumptions": [
+        "The rest of the team would move to the new tool and keep using it",
+        "I would not need to maintain a second copy of shared documents"
+      ],
+      "surfaced": [
+        {
+          "text": "The internship would convert into a full-time offer, making the extra time worth it",
+          "source_note_id": "2026-06-18-internship",
+          "query_similarity": 0.4972,
+          "best_match": 0.3436,
+          "best_match_text": "I would not need to maintain a second copy of shared documents"
+        },
+        {
+          "text": "The extra tuition for in-person classes would be worth it because of the networking and job placement",
+          "source_note_id": "2026-01-15-course-choice",
+          "query_similarity": 0.4158,
+          "best_match": 0.3109,
+          "best_match_text": "I would not need to maintain a second copy of shared documents"
+        },
+        {
+          "text": "I would have enough free time each week to lead the meetings and run the events",
+          "source_note_id": "2026-03-10-club-role",
+          "query_similarity": 0.2294,
+          "best_match": 0.1961,
+          "best_match_text": "I would not need to maintain a second copy of shared documents"
+        },
+        {
+          "text": "The full-time schedule would leave enough room for my other coursework",
+          "source_note_id": "2026-01-15-course-choice",
+          "query_similarity": 0.2247,
+          "best_match": 0.3903,
+          "best_match_text": "The rest of the team would move to the new tool and keep using it"
+        },
+        {
+          "text": "A certificate would pass the resume screen on its own",
+          "source_note_id": "2026-10-01-certification-vs-project",
+          "query_similarity": 0.2123,
+          "best_match": 0.4098,
+          "best_match_text": "The rest of the team would move to the new tool and keep using it"
+        },
+        {
+          "text": "Credits from abroad would transfer back to my program without extra paperwork",
+          "source_note_id": "2026-08-30-exchange-semester",
+          "query_similarity": 0.1992,
+          "best_match": 0.2339,
+          "best_match_text": "The rest of the team would move to the new tool and keep using it"
+        },
+        {
+          "text": "Living costs would stay the same as a semester at home",
+          "source_note_id": "2026-08-30-exchange-semester",
+          "query_similarity": 0.1438,
+          "best_match": 0.2777,
+          "best_match_text": "The rest of the team would move to the new tool and keep using it"
+        },
+        {
+          "text": "The other members would handle their assigned tasks without chasing",
+          "source_note_id": "2026-03-10-club-role",
+          "query_similarity": 0.1288,
+          "best_match": 0.1781,
+          "best_match_text": "The rest of the team would move to the new tool and keep using it"
+        },
+        {
+          "text": "I could still prepare for the fall exams in August",
+          "source_note_id": "2026-06-18-internship",
+          "query_similarity": 0.085,
+          "best_match": 0.1125,
+          "best_match_text": "The rest of the team would move to the new tool and keep using it"
+        }
+      ]
+    },
+    {
+      "note_id": "2026-06-18-internship",
+      "domain": "career",
+      "hit": false,
+      "best_match": 0.6141,
+      "best_match_true": "The internship would convert into a full-time offer, making the extra time worth it",
+      "best_match_surfaced": "The extra tuition for in-person classes would be worth it because of the networking and job placement",
+      "best_match_source": "2026-01-15-course-choice",
+      "surfaced_count": 0,
+      "retrieved_count": 9,
+      "true_failed_assumptions": [
+        "The internship would convert into a full-time offer, making the extra time worth it",
+        "I could still prepare for the fall exams in August"
+      ],
+      "surfaced": [
+        {
+          "text": "The extra tuition for in-person classes would be worth it because of the networking and job placement",
+          "source_note_id": "2026-01-15-course-choice",
+          "query_similarity": 0.5961,
+          "best_match": 0.6141,
+          "best_match_text": "The internship would convert into a full-time offer, making the extra time worth it"
+        },
+        {
+          "text": "The other members would handle their assigned tasks without chasing",
+          "source_note_id": "2026-03-10-club-role",
+          "query_similarity": 0.4349,
+          "best_match": 0.5049,
+          "best_match_text": "The internship would convert into a full-time offer, making the extra time worth it"
+        },
+        {
+          "text": "Living costs would stay the same as a semester at home",
+          "source_note_id": "2026-08-30-exchange-semester",
+          "query_similarity": 0.4348,
+          "best_match": 0.2955,
+          "best_match_text": "I could still prepare for the fall exams in August"
+        },
+        {
+          "text": "I would have enough free time each week to lead the meetings and run the events",
+          "source_note_id": "2026-03-10-club-role",
+          "query_similarity": 0.3291,
+          "best_match": 0.3363,
+          "best_match_text": "I could still prepare for the fall exams in August"
+        },
+        {
+          "text": "I would not need to maintain a second copy of shared documents",
+          "source_note_id": "2026-05-12-tool-stack",
+          "query_similarity": 0.2969,
+          "best_match": 0.3436,
+          "best_match_text": "The internship would convert into a full-time offer, making the extra time worth it"
+        },
+        {
+          "text": "Credits from abroad would transfer back to my program without extra paperwork",
+          "source_note_id": "2026-08-30-exchange-semester",
+          "query_similarity": 0.2959,
+          "best_match": 0.4215,
+          "best_match_text": "The internship would convert into a full-time offer, making the extra time worth it"
+        },
+        {
+          "text": "The rest of the team would move to the new tool and keep using it",
+          "source_note_id": "2026-05-12-tool-stack",
+          "query_similarity": 0.2083,
+          "best_match": 0.1125,
+          "best_match_text": "The internship would convert into a full-time offer, making the extra time worth it"
+        },
+        {
+          "text": "The full-time schedule would leave enough room for my other coursework",
+          "source_note_id": "2026-01-15-course-choice",
+          "query_similarity": 0.1962,
+          "best_match": 0.0104,
+          "best_match_text": "The internship would convert into a full-time offer, making the extra time worth it"
+        },
+        {
+          "text": "A certificate would pass the resume screen on its own",
+          "source_note_id": "2026-10-01-certification-vs-project",
+          "query_similarity": 0.0539,
+          "best_match": 0.0893,
+          "best_match_text": "The internship would convert into a full-time offer, making the extra time worth it"
+        }
+      ]
+    },
+    {
+      "note_id": "2026-08-30-exchange-semester",
+      "domain": "study",
+      "hit": false,
+      "best_match": 0.4552,
+      "best_match_true": "Credits from abroad would transfer back to my program without extra paperwork",
+      "best_match_surfaced": "The extra tuition for in-person classes would be worth it because of the networking and job placement",
+      "best_match_source": "2026-01-15-course-choice",
+      "surfaced_count": 0,
+      "retrieved_count": 9,
+      "true_failed_assumptions": [
+        "Credits from abroad would transfer back to my program without extra paperwork",
+        "Living costs would stay the same as a semester at home"
+      ],
+      "surfaced": [
+        {
+          "text": "The extra tuition for in-person classes would be worth it because of the networking and job placement",
+          "source_note_id": "2026-01-15-course-choice",
+          "query_similarity": 0.5033,
+          "best_match": 0.4552,
+          "best_match_text": "Credits from abroad would transfer back to my program without extra paperwork"
+        },
+        {
+          "text": "The internship would convert into a full-time offer, making the extra time worth it",
+          "source_note_id": "2026-06-18-internship",
+          "query_similarity": 0.4577,
+          "best_match": 0.4215,
+          "best_match_text": "Credits from abroad would transfer back to my program without extra paperwork"
+        },
+        {
+          "text": "The rest of the team would move to the new tool and keep using it",
+          "source_note_id": "2026-05-12-tool-stack",
+          "query_similarity": 0.3948,
+          "best_match": 0.2777,
+          "best_match_text": "Living costs would stay the same as a semester at home"
+        },
+        {
+          "text": "The full-time schedule would leave enough room for my other coursework",
+          "source_note_id": "2026-01-15-course-choice",
+          "query_similarity": 0.3558,
+          "best_match": 0.4377,
+          "best_match_text": "Living costs would stay the same as a semester at home"
+        },
+        {
+          "text": "The other members would handle their assigned tasks without chasing",
+          "source_note_id": "2026-03-10-club-role",
+          "query_similarity": 0.2992,
+          "best_match": 0.2405,
+          "best_match_text": "Living costs would stay the same as a semester at home"
+        },
+        {
+          "text": "I would not need to maintain a second copy of shared documents",
+          "source_note_id": "2026-05-12-tool-stack",
+          "query_similarity": 0.2689,
+          "best_match": 0.1342,
+          "best_match_text": "Credits from abroad would transfer back to my program without extra paperwork"
+        },
+        {
+          "text": "I could still prepare for the fall exams in August",
+          "source_note_id": "2026-06-18-internship",
+          "query_similarity": 0.1877,
+          "best_match": 0.2955,
+          "best_match_text": "Living costs would stay the same as a semester at home"
+        },
+        {
+          "text": "A certificate would pass the resume screen on its own",
+          "source_note_id": "2026-10-01-certification-vs-project",
+          "query_similarity": 0.0579,
+          "best_match": 0.1145,
+          "best_match_text": "Credits from abroad would transfer back to my program without extra paperwork"
+        },
+        {
+          "text": "I would have enough free time each week to lead the meetings and run the events",
+          "source_note_id": "2026-03-10-club-role",
+          "query_similarity": 0.0448,
+          "best_match": 0.0701,
+          "best_match_text": "Credits from abroad would transfer back to my program without extra paperwork"
+        }
+      ]
+    },
+    {
+      "note_id": "2026-10-01-certification-vs-project",
+      "domain": "career",
+      "hit": false,
+      "best_match": 0.4098,
+      "best_match_true": "A certificate would pass the resume screen on its own",
+      "best_match_surfaced": "I would have enough free time each week to lead the meetings and run the events",
+      "best_match_source": "2026-03-10-club-role",
+      "surfaced_count": 0,
+      "retrieved_count": 10,
+      "true_failed_assumptions": [
+        "A certificate would pass the resume screen on its own"
+      ],
+      "surfaced": [
+        {
+          "text": "I would not need to maintain a second copy of shared documents",
+          "source_note_id": "2026-05-12-tool-stack",
+          "query_similarity": 0.3893,
+          "best_match": 0.0117,
+          "best_match_text": "A certificate would pass the resume screen on its own"
+        },
+        {
+          "text": "I would have enough free time each week to lead the meetings and run the events",
+          "source_note_id": "2026-03-10-club-role",
+          "query_similarity": 0.3098,
+          "best_match": 0.4098,
+          "best_match_text": "A certificate would pass the resume screen on its own"
+        },
+        {
+          "text": "The rest of the team would move to the new tool and keep using it",
+          "source_note_id": "2026-05-12-tool-stack",
+          "query_similarity": 0.2904,
+          "best_match": 0.4098,
+          "best_match_text": "A certificate would pass the resume screen on its own"
+        },
+        {
+          "text": "The full-time schedule would leave enough room for my other coursework",
+          "source_note_id": "2026-01-15-course-choice",
+          "query_similarity": 0.258,
+          "best_match": 0.0,
+          "best_match_text": ""
+        },
+        {
+          "text": "The extra tuition for in-person classes would be worth it because of the networking and job placement",
+          "source_note_id": "2026-01-15-course-choice",
+          "query_similarity": 0.2083,
+          "best_match": 0.0916,
+          "best_match_text": "A certificate would pass the resume screen on its own"
+        },
+        {
+          "text": "The internship would convert into a full-time offer, making the extra time worth it",
+          "source_note_id": "2026-06-18-internship",
+          "query_similarity": 0.1659,
+          "best_match": 0.0893,
+          "best_match_text": "A certificate would pass the resume screen on its own"
+        },
+        {
+          "text": "Credits from abroad would transfer back to my program without extra paperwork",
+          "source_note_id": "2026-08-30-exchange-semester",
+          "query_similarity": 0.0946,
+          "best_match": 0.1145,
+          "best_match_text": "A certificate would pass the resume screen on its own"
+        },
+        {
+          "text": "The other members would handle their assigned tasks without chasing",
+          "source_note_id": "2026-03-10-club-role",
+          "query_similarity": 0.0362,
+          "best_match": 0.0777,
+          "best_match_text": "A certificate would pass the resume screen on its own"
+        },
+        {
+          "text": "Living costs would stay the same as a semester at home",
+          "source_note_id": "2026-08-30-exchange-semester",
+          "query_similarity": 0.0191,
+          "best_match": 0.0,
+          "best_match_text": ""
+        },
+        {
+          "text": "I could still prepare for the fall exams in August",
+          "source_note_id": "2026-06-18-internship",
+          "query_similarity": 0.0,
+          "best_match": 0.0,
+          "best_match_text": ""
+        }
+      ]
+    }
+  ]
+}
