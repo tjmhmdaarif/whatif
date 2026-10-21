@@ -174,6 +174,11 @@ class DecisionStore:
         ).fetchone()
         return row["content_hash"] if row else None
 
+    def get_note_bodies(self) -> dict[str, str]:
+        """Return a mapping of note id to its stored body text."""
+        rows = self.conn.execute("SELECT id, body FROM notes").fetchall()
+        return {row["id"]: row["body"] for row in rows}
+
     def needs_embedding(self, note_id: str, content_hash: str) -> bool:
         """Return True if the note is new or its content changed since indexing.
 

@@ -30,6 +30,39 @@ def fake_vector(text: str, dim: int = 32) -> list[float]:
     return [x / norm for x in raw]
 
 
+def generated_brief(prompt: str) -> str:
+    """A canned brief that cites a note id the prompt actually allowed."""
+    allowed: list[str] = []
+    marker = "=== NOTE IDS YOU MAY CITE ==="
+    if marker in prompt:
+        tail = prompt.split(marker, 1)[1]
+        for line in tail.split("\n"):
+            line = line.strip()
+            if not line:
+                continue
+            if line.startswith("==="):
+                break
+            allowed = [part.strip() for part in line.split(",") if part.strip()]
+            break
+
+    cited = allowed[0] if allowed else "2026-01-15-course-choice"
+    relevance = f"{cited}: a past decision on a similar tradeoff" if allowed else ""
+
+    return f"""<decision_summary>
+The user is choosing between two options that differ on cost and time [ESTIMATE]
+A similar tradeoff was decided before [EVIDENCE: {cited}]
+</decision_summary>
+<similar_notes>
+{relevance}
+</similar_notes>
+<counterargument>
+A similar decision did not pay off last time [EVIDENCE: {cited}]
+</counterargument>
+<open_questions>
+What is the real budget? [ESTIMATE]
+</open_questions>"""
+
+
 class FakeOllamaHandler(BaseHTTPRequestHandler):
     """Minimal Ollama-compatible request handler."""
 
@@ -72,7 +105,7 @@ class FakeOllamaHandler(BaseHTTPRequestHandler):
         elif self.path == "/api/embeddings":
             self._send({"embedding": fake_vector(str(payload.get("prompt", "")))})
         elif self.path == "/api/generate":
-            self._send({"response": "A generated answer. [ESTIMATE]"})
+            self._send({"response": generated_brief(str(payload.get("prompt", "")))})
         else:
             self._send({"error": "not found"}, status=404)
 
@@ -130,7 +163,13 @@ failed_assumption_threshold = 0.6
 
 [brief]
 max_retries = 1
-legend = "Legend"
+legend = \"\"\"> **Legend**
+>
+> - `[EVIDENCE: note-id]` - a claim supported by a retrieved decision
+> - `[ESTIMATE]` - a judgement with no supporting evidence
+> - `[UNVERIFIED]` - a claim that failed validation
+> - `COMPUTED` - a value calculated in code
+\"\"\"
 
 [logging]
 level = "INFO"
@@ -261,6 +300,71 @@ class TestAgainstStandInServer:
         assert exit_code == 1
         assert "Cannot reach Ollama" in captured.err
         assert "Traceback" not in captured.err
+
+    def test_brief_command_end_to_end(
+        self, fake_ollama: str, seeded_vault: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        config_path = write_config(seeded_vault, fake_ollama)
+        main(["index", "--config", str(config_path)])
+        capsys.readouterr()
+
+        note = seeded_vault / "Decisions" / "2026-09-14-side-project-build.md"
+        exit_code = main(["brief", str(note), "--config", str(config_path)])
+        captured = capsys.readouterr()
+
+        assert exit_code == 0, captured.err
+        brief_path = seeded_vault / "Briefs" / "2026-09-14-side-project-build.md"
+        assert brief_path.exists()
+
+        content = brief_path.read_text(encoding="utf-8")
+        assert "# Decision brief: 2026-09-14-side-project-build" in content
+        assert "[EVIDENCE: note-id]" in content
+        assert "## Similar past decisions" in content
+        assert "## Assumptions that failed before" in content
+        assert "## Weighted comparison" in content
+        assert "## Counterargument" in content
+        assert "## Open questions" in content
+        assert "Total (COMPUTED)" in content
+        # The brief must not contain a percentage.
+        assert "%" not in content
+
+    def test_brief_command_needs_an_index(
+        self, fake_ollama: str, seeded_vault: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        config_path = write_config(seeded_vault, fake_ollama)
+        note = seeded_vault / "Decisions" / "2026-09-14-side-project-build.md"
+
+        exit_code = main(["brief", str(note), "--config", str(config_path)])
+        captured = capsys.readouterr()
+
+        assert exit_code == 1
+        assert "whatif index" in captured.err
+
+    def test_brief_command_reports_a_missing_note(
+        self, fake_ollama: str, seeded_vault: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        config_path = write_config(seeded_vault, fake_ollama)
+        main(["index", "--config", str(config_path)])
+        capsys.readouterr()
+
+        exit_code = main(["brief", "no-such-note", "--config", str(config_path)])
+        captured = capsys.readouterr()
+
+        assert exit_code == 1
+        assert "Note not found" in captured.err
+
+    def test_brief_command_finds_a_note_by_id(
+        self, fake_ollama: str, seeded_vault: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        config_path = write_config(seeded_vault, fake_ollama)
+        main(["index", "--config", str(config_path)])
+        capsys.readouterr()
+
+        exit_code = main(["brief", "2026-10-01-certification", "--config", str(config_path)])
+        captured = capsys.readouterr()
+
+        assert exit_code == 0, captured.err
+        assert (seeded_vault / "Briefs" / "2026-10-01-certification-vs-project.md").exists()
 
 
 if __name__ == "__main__":

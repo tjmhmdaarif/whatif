@@ -23,6 +23,50 @@ def fake_vector(text: str) -> list[float]:
     return [x / norm for x in raw]
 
 
+def generated_brief(prompt: str) -> str:
+    """Build a canned brief that cites a note id the prompt actually allowed.
+
+    A real model would read the prompt; this one just picks the first id out of
+    the "NOTE IDS YOU MAY CITE" section, which is enough to exercise the whole
+    pipeline including tag validation.
+    """
+    allowed: list[str] = []
+    marker = "=== NOTE IDS YOU MAY CITE ==="
+    if marker in prompt:
+        tail = prompt.split(marker, 1)[1]
+        for line in tail.split("\n"):
+            line = line.strip()
+            if not line:
+                continue
+            if line.startswith("==="):
+                break
+            allowed = [part.strip() for part in line.split(",") if part.strip()]
+            break
+
+    cited = allowed[0] if allowed else "2026-01-15-course-choice"
+    relevance = (
+        f"{cited}: A past decision where the cheaper option lost for reasons that "
+        f"were not about price"
+        if allowed
+        else ""
+    )
+
+    return f"""<decision_summary>
+The user is choosing between two options that differ mainly on price and speed [ESTIMATE]
+The cheaper option scored better on price but the faster one carried the weighted total in the note [EVIDENCE: {cited}]
+</decision_summary>
+<similar_notes>
+{relevance}
+</similar_notes>
+<counterargument>
+A similar decision did not pay off the last time it was made [EVIDENCE: {cited}]
+</counterargument>
+<open_questions>
+What is the real budget once the second option is included? [ESTIMATE]
+How much does the speed matter after the deadline? [ESTIMATE]
+</open_questions>"""
+
+
 class Handler(BaseHTTPRequestHandler):
     def log_message(self, format: str, *args: object) -> None:
         return
@@ -60,7 +104,7 @@ class Handler(BaseHTTPRequestHandler):
         elif self.path == "/api/embeddings":
             self._send({"embedding": fake_vector(str(payload.get("prompt", "")))})
         elif self.path == "/api/generate":
-            self._send({"response": "A generated answer. [ESTIMATE]"})
+            self._send({"response": generated_brief(str(payload.get("prompt", "")))})
         else:
             self._send({"error": "not found"}, status=404)
 

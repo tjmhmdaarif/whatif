@@ -171,16 +171,95 @@ def cmd_brief(args: argparse.Namespace) -> int:
     """Generate a decision brief for a note."""
     config = load_config(args.config, args.vault)
 
-    note_path = Path(args.note).expanduser().resolve()
-    if not note_path.exists():
-        logger.error(f"Note not found: {note_path}")
+    from whatif.brief import BriefGenerator
+    from whatif.embeddings import OllamaError, build_client
+    from whatif.notes import parse_decision_file
+    from whatif.retrieve import Retriever
+    from whatif.store import DecisionStore
+
+    note_path = _resolve_note_path(args.note, config)
+    if note_path is None:
         return 1
 
-    logger.info(f"Generating brief for {note_path}")
+    result = parse_decision_file(note_path)
+    if result.decision is None:
+        print(f"Could not parse the note: {result.error}", file=sys.stderr)
+        return 1
+    decision = result.decision
 
-    # TODO: Implement in M6
-    logger.warning("Brief command not yet implemented (M6)")
+    if not config.vault.db_path.exists():
+        print(
+            f"No index found at {config.vault.db_path}. Run 'whatif index' first.",
+            file=sys.stderr,
+        )
+        return 1
+
+    store = DecisionStore(config.vault.db_path)
+    try:
+        client = build_client(config)
+        embedder_client = build_client(config)
+        embedder_client.model = config.models.embed_model
+        retriever = Retriever(store, embedder=embedder_client.embed)
+
+        generator = BriefGenerator(
+            config, client, retriever, note_bodies=store.get_note_bodies()
+        )
+        brief = generator.generate(decision, k=args.k)
+    except OllamaError as exc:
+        print(f"Ollama unavailable: {exc}", file=sys.stderr)
+        return 1
+    except Exception as exc:  # noqa: BLE001
+        logger.error("Brief generation failed: %s", exc)
+        if getattr(args, "debug", False):
+            raise
+        print(f"Brief generation failed: {exc}", file=sys.stderr)
+        return 1
+    finally:
+        store.close()
+
+    out_path = args.out or (config.vault.briefs_path / f"{decision.id}.md")
+    out_path = Path(out_path)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(brief.content, encoding="utf-8")
+
+    print(f"Brief written to {out_path}")
+    print(
+        f"  retrieved {len(brief.similar)} similar decisions, "
+        f"{len(brief.failed_assumptions)} past assumption failures"
+    )
+    if brief.validation and not brief.validation.passed:
+        print(
+            f"  {len(brief.validation.issues)} claim(s) marked [UNVERIFIED] "
+            f"after {brief.retries} retry attempt(s)"
+        )
     return 0
+
+
+def _resolve_note_path(note: str, config) -> Path | None:
+    """Find a note by path, by id, or by id prefix inside the Decisions folder."""
+    candidate = Path(note).expanduser()
+    if candidate.exists() and candidate.is_file():
+        return candidate.resolve()
+
+    decisions_dir = config.vault.decisions_path
+    if decisions_dir.exists():
+        matches = sorted(decisions_dir.glob(f"{note}*.md"))
+        if len(matches) == 1:
+            return matches[0].resolve()
+        if len(matches) > 1:
+            print(
+                f"More than one note matches '{note}':\n"
+                + "\n".join(f"  {m.name}" for m in matches),
+                file=sys.stderr,
+            )
+            return None
+
+    print(
+        f"Note not found: {note}\n"
+        f"Looked for a file at {candidate} and for notes in {decisions_dir}",
+        file=sys.stderr,
+    )
+    return None
 
 
 def cmd_canvas(args: argparse.Namespace) -> int:

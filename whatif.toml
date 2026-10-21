@@ -27,11 +27,14 @@ failed_assumption_threshold = 0.6
 
 [brief]
 max_retries = 1
-legend = """Legend:
-  [EVIDENCE: note-id] — Claim supported by a retrieved decision note
-  [ESTIMATE]          — Reasoned judgment without direct evidence
-  [UNVERIFIED]        — Claim that failed tag validation after retry
-  COMPUTED            — Values calculated from your scores and weights (never LLM-generated)"""
+legend = """> **Legend**
+>
+> - `[EVIDENCE: note-id]` - a claim supported by a past decision that was retrieved
+> - `[ESTIMATE]` - a judgement with no supporting evidence in your notes
+> - `[UNVERIFIED]` - a claim that failed validation and could not be confirmed
+> - `COMPUTED` - a value calculated in code from your own scores and weights
+>
+> WhatIf does not predict outcomes. Nothing here is a probability."""
 
 [eval]
 leave_one_out = true
