@@ -32,8 +32,10 @@ def vault_dir(temp_dir: Path) -> Path:
 def config_path(vault_dir: Path) -> Path:
     """Create a default config file."""
     config_file = vault_dir / "whatif.toml"
+    # Use forward slashes so the TOML parses on Windows (backslash is an escape char).
+    vault_str = vault_dir.as_posix()
     config_file.write_text(f"""[vault]
-path = "{vault_dir}"
+path = "{vault_str}"
 decisions_dir = "Decisions"
 briefs_dir = "Briefs"
 canvases_dir = "Canvases"

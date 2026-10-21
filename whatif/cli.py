@@ -72,35 +72,7 @@ def cmd_init(args: argparse.Namespace) -> int:
 
     # Create template
     template_path = config.vault.templates_path
-    if not template_path.exists():
-        template_content = """---
-id: {{date}}-{{slug}}
-type: decision
-status: open
-created: {{date}}
-domain: other
-options: []
-chosen:
-criteria:
-  - {name: criterion1, weight: 1}
-scores: {}
-assumptions: []
-risks: []
-outcome:
-  reviewed_on:
-  result:
-  failed_assumptions: []
-tags: []
----
-## Context
-
-## Options
-
-## Decision
-
-## Outcome
-"""
-        template_path.write_text(template_content, encoding="utf-8")
+    if config.ensure_template():
         logger.info(f"Created template at {template_path}")
 
     print(f"Initialized WhatIf vault at {vault_path}")
@@ -128,21 +100,19 @@ def cmd_doctor(args: argparse.Namespace) -> int:
     checks.append(("WhatIf dir", config.vault.whatif_path.exists(), str(config.vault.whatif_path)))
 
     # Check Ollama
+    from whatif.embeddings import OllamaError, build_client
+
     ollama_ok = False
     models_ok = False
     try:
-        import urllib.request
-        import json
-
-        # Check Ollama server
-        req = urllib.request.Request(f"{config.ollama.host}/api/tags", method="GET")
-        with urllib.request.urlopen(req, timeout=5) as resp:
-            data = json.load(resp)
-            models = {m["name"] for m in data.get("models", [])}
-            ollama_ok = True
-            models_ok = config.models.llm_model in models and config.models.embed_model in models
-    except Exception as e:
-        logger.debug(f"Ollama check failed: {e}")
+        client = build_client(config)
+        available = client.list_models()
+        ollama_ok = True
+        models_ok = client.has_model(config.models.llm_model) and client.has_model(
+            config.models.embed_model
+        )
+    except OllamaError as e:
+        logger.debug("Ollama check failed: %s", e)
 
     checks.append(("Ollama server", ollama_ok, config.ollama.host))
     checks.append((f"Model: {config.models.llm_model}", models_ok, ""))
@@ -172,11 +142,29 @@ def cmd_doctor(args: argparse.Namespace) -> int:
 def cmd_index(args: argparse.Namespace) -> int:
     """Index decision notes into SQLite."""
     config = load_config(args.config, args.vault)
-    logger.info(f"Indexing decisions from {config.vault.decisions_path}")
+    logger.info("Indexing decisions from %s", config.vault.decisions_path)
 
-    # TODO: Implement in M3
-    logger.warning("Index command not yet implemented (M3)")
-    return 0
+    from whatif.embeddings import OllamaError
+    from whatif.store import index_decisions
+
+    try:
+        stats = index_decisions(config)
+    except OllamaError as exc:
+        logger.error("Ollama unavailable: %s", exc)
+        print(f"Ollama unavailable: {exc}", file=sys.stderr)
+        return 1
+    except Exception as exc:  # noqa: BLE001
+        logger.error("Indexing failed: %s", exc)
+        if getattr(args, "debug", False):
+            raise
+        print(f"Indexing failed: {exc}", file=sys.stderr)
+        return 1
+
+    for error in stats.errors:
+        print(f"  FAILED: {error}", file=sys.stderr)
+
+    print(f"Indexed: {stats.indexed}  Skipped: {stats.skipped}  Failed: {stats.failed}")
+    return 0 if stats.failed == 0 else 1
 
 
 def cmd_brief(args: argparse.Namespace) -> int:

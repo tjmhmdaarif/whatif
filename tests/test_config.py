@@ -30,6 +30,7 @@ class TestVaultConfig:
         assert vc.decisions_dir == "Decisions"
         assert vc.briefs_dir == "Briefs"
         assert vc.canvases_dir == "Canvases"
+        assert vc.templates_dir == "Templates"
         assert vc.whatif_dir == ".whatif"
 
     def test_paths_resolved(self) -> None:
@@ -40,6 +41,10 @@ class TestVaultConfig:
         assert vc.canvases_path == vc.path / "Canvases"
         assert vc.whatif_path == vc.path / ".whatif"
         assert vc.db_path == vc.path / ".whatif" / "index.sqlite"
+        assert vc.templates_path == vc.path / "Templates" / "decision.md"
+
+    def test_custom_templates_dir(self) -> None:
+        vc = VaultConfig(path="/tmp/test", templates_dir="Templates")
         assert vc.templates_path == vc.path / "Templates" / "decision.md"
 
 
@@ -120,6 +125,22 @@ class TestCreateDefaultConfig:
             assert config.vault.canvases_path.exists()
             assert config.vault.whatif_path.exists()
             assert config.vault.templates_path.parent.exists()
+
+    def test_creates_template(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            config = create_default_config(tmpdir)
+            assert config.vault.templates_path.exists()
+            content = config.vault.templates_path.read_text(encoding="utf-8")
+            assert "type: decision" in content
+            assert "## Context" in content
+
+    def test_does_not_overwrite_existing_template(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            config = create_default_config(tmpdir)
+            config.vault.templates_path.write_text("MY OWN TEMPLATE", encoding="utf-8")
+
+            create_default_config(tmpdir)
+            assert config.vault.templates_path.read_text(encoding="utf-8") == "MY OWN TEMPLATE"
 
 
 class TestWriteDefaultConfig:

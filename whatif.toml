@@ -6,6 +6,7 @@ path = "."
 decisions_dir = "Decisions"
 briefs_dir = "Briefs"
 canvases_dir = "Canvases"
+templates_dir = "Templates"
 whatif_dir = ".whatif"
 
 [models]

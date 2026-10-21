@@ -25,6 +25,7 @@ class VaultConfig:
     decisions_dir: str = "Decisions"
     briefs_dir: str = "Briefs"
     canvases_dir: str = "Canvases"
+    templates_dir: str = "Templates"
     whatif_dir: str = ".whatif"
 
     def __post_init__(self) -> None:
@@ -43,16 +44,17 @@ class VaultConfig:
         return self.path / self.canvases_dir
 
     @property
+    def templates_path(self) -> Path:
+        """Path to the decision note template file."""
+        return self.path / self.templates_dir / "decision.md"
+
+    @property
     def whatif_path(self) -> Path:
         return self.path / self.whatif_dir
 
     @property
     def db_path(self) -> Path:
         return self.whatif_path / "index.sqlite"
-
-    @property
-    def templates_path(self) -> Path:
-        return self.path / "Templates" / "decision.md"
 
 
 @dataclass
@@ -101,6 +103,35 @@ class LoggingConfig:
     """Logging configuration."""
     level: str = "INFO"
     format: str = "%(levelname)s | %(name)s | %(message)s"
+
+
+DECISION_TEMPLATE = """---
+id: {{date}}-{{slug}}
+type: decision
+status: open
+created: {{date}}
+domain: other
+options: []
+chosen:
+criteria:
+  - {name: criterion1, weight: 1}
+scores: {}
+assumptions: []
+risks: []
+outcome:
+  reviewed_on:
+  result:
+  failed_assumptions: []
+tags: []
+---
+## Context
+
+## Options
+
+## Decision
+
+## Outcome
+"""
 
 
 @dataclass
@@ -168,6 +199,19 @@ class Config:
         self.vault.whatif_path.mkdir(parents=True, exist_ok=True)
         self.vault.templates_path.parent.mkdir(parents=True, exist_ok=True)
 
+    def ensure_template(self) -> bool:
+        """Write the decision note template if it is missing.
+
+        Returns:
+            True if the template was created, False if it already existed.
+        """
+        template_path = self.vault.templates_path
+        if template_path.exists():
+            return False
+        template_path.parent.mkdir(parents=True, exist_ok=True)
+        template_path.write_text(DECISION_TEMPLATE, encoding="utf-8")
+        return True
+
 
 def load_config(config_path: Path | str | None = None, vault_path: Path | str | None = None) -> Config:
     """Load configuration with optional overrides.
@@ -198,6 +242,9 @@ def load_config(config_path: Path | str | None = None, vault_path: Path | str | 
         config.vault.path = Path(vault_path).expanduser().resolve()
 
     config.ensure_directories()
+    # Never overwrites an existing template; a vault pointed at for the first time
+    # still gets a usable note template.
+    config.ensure_template()
     config.setup_logging()
 
     return config
@@ -208,6 +255,7 @@ def create_default_config(vault_path: Path | str) -> Config:
     config = Config()
     config.vault.path = Path(vault_path).expanduser().resolve()
     config.ensure_directories()
+    config.ensure_template()
     config.setup_logging()
     return config
 
@@ -231,6 +279,7 @@ path = "{vault_path_str}"
 decisions_dir = "Decisions"
 briefs_dir = "Briefs"
 canvases_dir = "Canvases"
+templates_dir = "Templates"
 whatif_dir = ".whatif"
 
 [models]

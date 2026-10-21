@@ -307,12 +307,19 @@ def parse_outcome(value: Any, file_path: Path) -> Outcome:
 def parse_decision_file(file_path: Path) -> ParseResult:
     """Parse a single decision Markdown file."""
     try:
-        content = file_path.read_text(encoding="utf-8")
+        raw = file_path.read_bytes()
     except Exception as e:
         return ParseResult(error=f"{file_path}: Failed to read file: {e}", file_path=file_path)
 
-    # Compute content hash
-    content_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
+    # Hash the raw bytes on disk so the hash reflects the file exactly.
+    content_hash = hashlib.sha256(raw).hexdigest()
+
+    try:
+        content = raw.decode("utf-8")
+    except UnicodeDecodeError as e:
+        return ParseResult(
+            error=f"{file_path}: Failed to decode file as UTF-8: {e}", file_path=file_path
+        )
 
     try:
         post = frontmatter.loads(content)
