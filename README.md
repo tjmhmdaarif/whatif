@@ -49,6 +49,30 @@ new note ──► parse ──► embed ──► retrieve top-k past decisions
 
 ---
 
+## Demo
+
+- **Landing page:** https://whatif-promo.vercel.app — a scroll-through of what
+  WhatIf does, ending in the install steps.
+- **Working prototype:** https://whatif-promo.vercel.app/demo/ — the real local web
+  UI served by `whatif serve`, replayed from baked API responses. No install, no
+  Ollama, no auth: every tab, note, and "Generate brief" works in the browser.
+
+Both are static files, so they are also reproducible offline:
+
+```bash
+python scripts/build_demo.py    # run the real code against a scratch vault with
+                                # stand-in models, capture the API, write promo/demo/
+python scripts/build_promo.py   # rebuild promo/whatif-promo.html (opens from file://)
+```
+
+The baked demo keeps the stand-in names (`standin-hash-embed`, `standin-canned-llm`)
+and reports its evaluation honestly: those hash embeddings are not real semantic
+embeddings, so the hit rate it shows is not the model's. The publishing procedure,
+including the rule that deploys must run from outside this repository, is in
+`promo/README.md`.
+
+---
+
 ## Setup
 
 Requirements: Python 3.11+, and [Ollama](https://ollama.com) for the language and
