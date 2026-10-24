@@ -62,3 +62,7 @@ vault/.whatif/
 *.sqlite-journal
 vault/Briefs/*.md
 vault/Canvases/*.canvas
+
+# Promo publish output (rebuild via scripts/publish_promo.py)
+promo/site/
+.vercel/

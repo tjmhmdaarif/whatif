@@ -342,6 +342,18 @@ def cmd_eval(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_serve(args: argparse.Namespace) -> int:
+    """Run the local web interface."""
+    from whatif.webapp import serve
+
+    return serve(
+        config_path=args.config,
+        vault_path=args.vault,
+        host=args.host,
+        port=args.port,
+    )
+
+
 def build_parser() -> argparse.ArgumentParser:
     """Build the argument parser."""
     parser = argparse.ArgumentParser(
@@ -396,6 +408,13 @@ def build_parser() -> argparse.ArgumentParser:
         "--out", type=Path, help="Output path (default: .whatif/eval-results.json)"
     )
     p_eval.set_defaults(func=cmd_eval)
+
+    # serve
+    p_serve = subparsers.add_parser("serve", help="Run the local web interface")
+    add_common_args(p_serve)
+    p_serve.add_argument("--host", default="127.0.0.1", help="Host to bind (default: 127.0.0.1)")
+    p_serve.add_argument("--port", type=int, default=8765, help="Port to listen on")
+    p_serve.set_defaults(func=cmd_serve)
 
     return parser
 

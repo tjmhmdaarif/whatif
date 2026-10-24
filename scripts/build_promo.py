@@ -7,6 +7,11 @@ dropped on any static host without a build step on the reader's side.
     python scripts/build_promo.py
 
 Writes ``promo/whatif-promo.html``.
+
+One thing is deliberately not inlined: the "Try the prototype" buttons link to
+``demo/index.html``, the static build produced by ``scripts/build_demo.py``. That
+folder ships next to this page, so the landing page hands the reader a working
+interface rather than a screenshot.
 """
 
 from __future__ import annotations
@@ -57,15 +62,17 @@ def build(root: Path) -> Path:
 
     html = html.replace("{{RETRIEVAL_IMAGE}}", data_uri)
 
-    # Nothing may reference an external file any more.
-    leftovers = re.findall(r'(?:src|href)="(?!data:|#|https://127\.0\.0\.1)([^"]+)"', html)
-    leftovers = [
-        item
-        for item in leftovers
-        if not item.startswith("http://") and not item.startswith("https://")
-    ]
-    if leftovers:
-        print(f"WARNING: still referencing external files: {leftovers}", file=sys.stderr)
+    # Nothing may reference an external file any more. A relative link is allowed
+    # only when the target really sits next to the page, so the standalone file
+    # cannot ship with a link to something that is not there.
+    pattern = re.compile(r'(?:src|href)="(?!data:|#|https?://)([^"]+)"')
+    links = sorted(set(pattern.findall(html)))
+    missing = [item for item in links if not (root / "promo" / item).exists()]
+    if missing:
+        print(f"WARNING: still referencing external files: {missing}", file=sys.stderr)
+    shipped = [item for item in links if item not in missing]
+    if shipped:
+        print("Ships next to this page: " + ", ".join(shipped))
 
     target.write_text(html, encoding="utf-8")
     print(f"Wrote {target} ({target.stat().st_size // 1024} KB)")

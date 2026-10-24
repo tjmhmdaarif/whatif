@@ -48,12 +48,53 @@ Total running time: 1:45.
 
 | File | What it is |
 |---|---|
+| `src.html` | The template for the scroll-based landing page. |
+| `whatif-promo.html` | The built landing page. Every asset inlined, so it opens from `file://`. |
+| `demo/` | The working interface as a static build, linked from the landing page's "Try the prototype" buttons. |
 | `promo.html` | The commercial. One self-contained file: no build step, no CDN, no web fonts. |
 | `whatif-promo.webm` | The rendered video, 1920x1080. |
 | `poster.jpg` | The opening frame, used as the thumbnail. |
 | `frames/` | Stills pulled from the finished video, for checking the result. |
 | `playwright.config.json` | The browser settings used to record: a 1920x1080 viewport and a 1920x1080 video size. |
 | `../scripts/extract_frames.py` | Pulls stills out of the video, because there is no ffmpeg on this machine. |
+
+## Publishing the landing page
+
+Two build steps, both idempotent:
+
+```bash
+python scripts/build_demo.py       # writes promo/demo/
+python scripts/build_promo.py      # writes promo/whatif-promo.html
+```
+
+`build_promo.py` inlines every asset into a single HTML file, so the page opens
+from `file://` and needs no build step on the reader's side. The one thing it
+does not inline is `demo/index.html`: the landing page hands the reader a working
+interface, and that folder has to ship next to the page.
+
+Assemble a deploy folder **outside the repository**:
+
+```
+<deploy>/index.html    <- promo/whatif-promo.html
+<deploy>/demo/         <- promo/demo/
+```
+
+Then run `vercel deploy --prod` from that folder.
+
+The folder must sit outside the repo. Vercel refuses a deployment whose commit
+author has no permission on the project, and this repository's author is
+`Developer <dev@localhost>`, so a deploy from inside a worktree is blocked
+outright. `scripts/publish_promo.py` writes `promo/site/` (gitignored) for hosts
+that do not check the commit author.
+
+## Checklist before publishing
+
+- Run `python scripts/build_demo.py` first — `promo/demo/` does not exist until
+  that step produces it, and the two "Try the prototype" buttons 404 without it.
+- Open `promo/whatif-promo.html` from `file://` and click **Try the prototype**:
+  the interface should load with 10 notes, a rendered brief, and no console
+  errors. The demo is a static snapshot of the stand-in Ollama run, so it says
+  so in a banner at the top of the page.
 
 ## Rebuilding it
 

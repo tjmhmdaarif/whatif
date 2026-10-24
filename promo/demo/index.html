@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WhatIf &mdash; interactive demo</title>
+<link rel="stylesheet" href="./styles.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230b0d10'/><path d='M9 22V10h3v4.6h8V10h3v12h-3v-4.7h-8V22z' fill='%234ec9a8'/></svg>">
+</head>
+<body>
+<style>
+  .demo-bar {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 18px;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--text-2);
+    background: #0a100e;
+    border-bottom: 1px solid var(--line);
+  }
+  .demo-bar code {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--accent);
+  }
+  .demo-bar a {
+    color: var(--accent);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .demo-bar a:hover { text-decoration: underline; }
+  @media (max-width: 820px) {
+    .demo-bar { flex-direction: column; align-items: flex-start; gap: 6px; }
+  }
+</style>
+<div class="demo-bar">
+  <span><strong>Interactive demo</strong> &mdash; a static snapshot of <code>whatif serve</code> running the 10-note sample vault. No server and no model is running here.</span>
+  <a href="../">&larr; Back to the landing page</a>
+</div>
+<div class="grain" aria-hidden="true"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="mark" aria-hidden="true">
+      <svg viewBox="0 0 32 32" width="26" height="26"><path d="M9 22V10h3v4.6h8V10h3v12h-3v-4.7h-8V22z" fill="currentColor"/></svg>
+    </span>
+    <span class="brand-name">WhatIf</span>
+    <span class="brand-sub" id="vaultPath">loading vault</span>
+  </div>
+
+  <div class="topbar-right">
+    <div class="status" id="health" data-state="checking">
+      <span class="dot" aria-hidden="true"></span>
+      <span class="status-text">checking</span>
+    </div>
+    <button class="btn btn-ghost" id="btnIndex" type="button">Rebuild index</button>
+    <button class="btn btn-primary" id="btnServe" type="button" disabled>Landing page</button>
+  </div>
+</header>
+
+<div class="shell">
+  <aside class="rail" id="rail">
+    <div class="rail-head">
+      <input class="search" id="search" type="search" placeholder="Filter decisions" aria-label="Filter decisions" autocomplete="off">
+      <div class="rail-meta">
+        <span id="noteCount">0 notes</span>
+        <span class="sep" aria-hidden="true">/</span>
+        <span id="failCount">0 with failures</span>
+      </div>
+    </div>
+    <ol class="notes" id="notes" role="listbox" aria-label="Decisions"></ol>
+    <div class="rail-empty" id="railEmpty" hidden>
+      <p>No decisions found in this vault.</p>
+      <p class="dim">Add a note to <code>Decisions/</code> and rebuild the index.</p>
+    </div>
+  </aside>
+
+  <main class="main" id="main">
+    <div class="placeholder" id="placeholder">
+      <div class="placeholder-mark" aria-hidden="true">
+        <svg viewBox="0 0 120 120" width="120" height="120">
+          <circle cx="60" cy="60" r="34" fill="none" stroke="currentColor" stroke-width="1" opacity=".35"/>
+          <circle cx="60" cy="60" r="20" fill="none" stroke="currentColor" stroke-width="1" opacity=".25"/>
+          <circle cx="60" cy="60" r="5" fill="currentColor" opacity=".8"/>
+        </svg>
+      </div>
+      <h2>Pick a decision</h2>
+      <p class="dim">WhatIf retrieves your past decisions, surfaces assumptions that failed before, and argues against the option you are leaning toward.</p>
+    </div>
+
+    <article class="doc" id="doc" hidden>
+      <div class="doc-head">
+        <div class="doc-title">
+          <h1 id="docId">-</h1>
+          <div class="doc-tags" id="docTags"></div>
+        </div>
+        <div class="doc-actions">
+          <div class="tabs" role="tablist" id="tabs">
+            <button class="tab is-active" data-tab="brief" role="tab">Brief</button>
+            <button class="tab" data-tab="canvas" role="tab">Canvas</button>
+            <button class="tab" data-tab="retrieval" role="tab">Retrieval</button>
+            <button class="tab" data-tab="scoring" role="tab">Scoring</button>
+            <button class="tab" data-tab="evaluation" role="tab">Evaluation</button>
+          </div>
+          <button class="btn btn-primary" id="btnGenerate" type="button">Generate brief</button>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-brief" role="tabpanel"></div>
+      <div class="panel" id="panel-canvas" role="tabpanel" hidden></div>
+      <div class="panel" id="panel-retrieval" role="tabpanel" hidden></div>
+      <div class="panel" id="panel-scoring" role="tabpanel" hidden></div>
+      <div class="panel" id="panel-evaluation" role="tabpanel" hidden></div>
+    </article>
+  </main>
+</div>
+
+<div class="toast-stack" id="toasts" aria-live="polite"></div>
+
+<script src="./data.js"></script>
+<script src="./shim.js"></script>
+<script src="./app.js"></script>
+<script src="./demo.js"></script>
+</body>
+</html>

@@ -2,10 +2,25 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>WhatIf - Commercial</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WhatIf — your past decisions, warning you about the next one</title>
+
+<meta name="description" content="WhatIf turns a vault of past decisions into evidence-based decision briefs. It finds the decisions that resemble yours, surfaces the assumptions that failed before, scores your options from your own numbers, and argues against the option you are leaning toward. Runs entirely on your machine.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="WhatIf - your past decisions, warning you about the next one">
+<meta property="og:description" content="It finds the past decisions that look like yours, surfaces the assumptions that failed before, and argues against the option you are leaning toward. Runs entirely on your machine.">
+<meta property="og:image" content="poster.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="WhatIf - your past decisions, warning you about the next one">
+<meta name="twitter:description" content="It finds the past decisions that look like yours, surfaces the assumptions that failed before, and argues against the option you are leaning toward. Runs entirely on your machine.">
+<meta name="twitter:image" content="poster.jpg">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b0d10'/%3E%3Cpath d='M9 22V10h3v4.6h8V10h3v12h-3v-4.7h-8V22z' fill='%234ec9a8'/%3E%3C/svg%3E">
+
 <style>
-  /* The commercial uses the same design language as the product: near-black
-     surfaces, one jade accent, mono for anything numeric, and a fixed grain. */
+  /* The landing page uses the same design language as the product: near-black
+     surfaces, one jade accent, mono for anything numeric, and a fixed grain.
+     The commercial is now scroll-driven: each scene is a full-height section
+     and the browser's scroll position is the timeline. */
 
   :root {
     --bg: #0b0d10;
@@ -28,17 +43,17 @@
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  /* An author-level `display` beats the UA rule for the `hidden` attribute. */
   [hidden] { display: none !important; }
 
+  html { scroll-behavior: smooth; }
+
   html, body {
-    width: 1920px; height: 1080px;
+    width: 100%;
     background: var(--bg);
     color: var(--text);
     font-family: var(--font);
-    overflow: hidden;
     -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
   }
 
   .grain {
@@ -46,19 +61,39 @@
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
-  #stage { position: relative; width: 1920px; height: 1080px; }
+  /* ---------------------------------------------------------- scroll progress */
+
+  #progress {
+    position: fixed; top: 0; left: 0; height: 2px; background: var(--accent);
+    width: 0; z-index: 95; transition: width 0.1s linear;
+  }
+
+  /* ---------------------------------------------------------- side nav dots */
+
+  #dots {
+    position: fixed; right: 26px; top: 50%; transform: translateY(-50%);
+    z-index: 94; display: flex; flex-direction: column; gap: 14px;
+  }
+  #dots button {
+    width: 9px; height: 9px; border-radius: 50%; border: 0; padding: 0;
+    background: var(--line-strong); cursor: pointer;
+    transition: background 0.3s var(--ease), transform 0.3s var(--ease);
+  }
+  #dots button:hover { background: var(--text-3); }
+  #dots button.on { background: var(--accent); transform: scale(1.5); }
+  @media (max-width: 760px) { #dots { display: none; } }
+
+  /* ---------------------------------------------------------- sections */
 
   .scene {
-    position: absolute; inset: 0;
+    position: relative;
+    min-height: 100vh;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    opacity: 0; visibility: hidden;
-    transition: opacity 0.7s var(--ease);
+    padding: 96px 32px;
   }
-  .scene.is-active { opacity: 1; visibility: visible; }
-  .scene.is-out { opacity: 0; }
 
-  .inner { width: 1280px; max-width: 86%; }
+  .inner { width: 1280px; max-width: 100%; }
 
   /* ---------------------------------------------------------- type */
 
@@ -79,40 +114,77 @@
   .accent { color: var(--accent); }
   .amber { color: var(--unverified); }
 
-  .rule { height: 1px; background: var(--line); margin: 40px 0; width: 100%; }
+  /* Reveal-on-scroll primitives. A child starts hidden and lifts in when its
+     section is active; the stagger comes from transition-delay in CSS. */
+  .reveal {
+    opacity: 0; transform: translateY(22px);
+    transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+  }
+  .scene.in .reveal { opacity: 1; transform: none; }
+  .scene.in .d1 { transition-delay: 0.05s; }
+  .scene.in .d2 { transition-delay: 0.15s; }
+  .scene.in .d3 { transition-delay: 0.25s; }
+  .scene.in .d4 { transition-delay: 0.35s; }
+  .scene.in .d5 { transition-delay: 0.45s; }
 
   /* ---------------------------------------------------------- scene 1 */
 
-  #s1 .inner { text-align: center; max-width: 1500px; }
+  #s1 { text-align: center; }
+  #s1 .inner { max-width: 1500px; }
   #s1 h1 { font-size: 96px; }
   #s1 .sub { margin: 34px auto 0; max-width: 30ch; }
-
-  .ghost {
-    position: absolute; font-family: var(--mono); font-size: 20px; color: var(--text-3);
-    opacity: 0.3; letter-spacing: -0.01em;
+  #s1 .cta-row {
+    margin-top: 52px; display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
   }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: var(--mono); font-size: 16px; letter-spacing: 0.04em;
+    padding: 15px 26px; border-radius: 10px; border: 1px solid var(--line-strong);
+    color: var(--text); text-decoration: none; background: var(--elev);
+    transition: background 0.2s var(--ease), border-color 0.2s var(--ease), transform 0.2s var(--ease);
+  }
+  .btn:hover { background: var(--surface); border-color: var(--text-3); transform: translateY(-1px); }
+  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .btn.primary { background: var(--accent-dim); border-color: var(--accent-line); color: var(--accent); }
+  .btn.primary:hover { background: rgba(78, 201, 168, 0.2); }
+
+  .scroll-hint {
+    margin-top: 64px; display: inline-flex; flex-direction: column; align-items: center; gap: 10px;
+    font-family: var(--mono); font-size: 13px; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--text-3);
+  }
+  .scroll-hint i {
+    width: 1px; height: 40px;
+    background: linear-gradient(180deg, var(--accent), transparent);
+    animation: drip 1.8s var(--ease) infinite;
+  }
+  @keyframes drip { 0%, 100% { opacity: 0.3; transform: scaleY(0.6); } 50% { opacity: 1; transform: scaleY(1); } }
 
   /* ---------------------------------------------------------- scene 2 */
 
-  .notes-cascade { position: absolute; inset: 0; overflow: hidden; }
+  #s2 .inner { max-width: 760px; margin-right: auto; margin-left: 6%; }
+  #s2 h1 { font-size: 70px; }
+
+  .notes-cascade {
+    position: absolute; inset: 0; overflow: hidden; pointer-events: none;
+  }
   .ncard {
-    position: absolute; width: 430px; padding: 20px 22px;
+    position: absolute; width: 340px; padding: 16px 18px;
     background: var(--elev); border: 1px solid var(--line); border-radius: 12px;
-    opacity: 0; transform: translateX(140px) rotate(1.5deg);
+    opacity: 0; transform: translateX(60px) rotate(1.5deg);
     transition: opacity 0.6s var(--ease), transform 0.6s var(--ease);
   }
   .ncard.in { opacity: 1; transform: none; }
-  .ncard .nid { font-family: var(--mono); font-size: 16px; color: var(--text-2); }
-  .ncard .nline { margin-top: 9px; font-size: 14px; color: var(--text-3); }
   .ncard.dimmed { opacity: 0.16; filter: grayscale(1); }
-
-  #s2 .inner { max-width: 760px; margin-right: auto; margin-left: 8%; }
-  #s2 h1 { font-size: 70px; }
+  .ncard .nid { font-family: var(--mono); font-size: 14px; color: var(--text-2); }
+  .ncard .nline { margin-top: 8px; font-size: 12px; color: var(--text-3); }
+  @media (max-width: 1100px) { .notes-cascade { display: none; } }
 
   .searchbox {
     margin-top: 40px; display: flex; align-items: center; gap: 16px;
     border: 1px solid var(--line-strong); border-radius: 10px; padding: 18px 22px;
-    background: var(--elev); width: 640px;
+    background: var(--elev); width: 640px; max-width: 100%;
   }
   .searchbox .q { font-family: var(--mono); font-size: 22px; color: var(--text); }
   .searchbox .cursor {
@@ -120,14 +192,15 @@
     animation: blink 1.05s steps(1) infinite;
   }
   @keyframes blink { 50% { opacity: 0; } }
-  .searchbox .none { margin-left: auto; font-size: 19px; color: var(--danger); }
+  .searchbox .none { margin-left: auto; font-size: 19px; color: var(--danger); opacity: 0; transition: opacity 0.5s var(--ease); }
+  .searchbox .none.in { opacity: 1; }
 
   /* ---------------------------------------------------------- scene 3 */
 
   #s3 .inner { max-width: 900px; }
   .new-note {
     margin-top: 44px; border: 1px solid var(--line-strong); border-radius: 12px;
-    background: var(--elev); padding: 30px 34px; width: 780px;
+    background: var(--elev); padding: 30px 34px; width: 780px; max-width: 100%;
   }
   .new-note .line {
     font-family: var(--mono); font-size: 20px; color: var(--text-2); opacity: 0;
@@ -135,6 +208,7 @@
     transition: opacity 0.4s var(--ease), transform 0.4s var(--ease);
   }
   .new-note .line.in { opacity: 1; transform: none; }
+  .new-note .line + .line { margin-top: 12px; }
   .new-note .line b { color: var(--text); font-weight: 500; }
 
   /* ---------------------------------------------------------- frame */
@@ -156,13 +230,6 @@
   }
   .frame img { display: block; width: 100%; }
 
-  .frame.crop { position: relative; overflow: hidden; }
-  .frame.crop img { position: absolute; }
-  .frame.crop .mask {
-    position: absolute; inset: 0;
-    background: linear-gradient(180deg, transparent 62%, rgba(11, 13, 16, 0.92) 100%);
-  }
-
   /* ---------------------------------------------------------- scene 4/5/6/7 */
 
   .shot { position: relative; }
@@ -180,14 +247,13 @@
   }
   .caption.in { opacity: 1; transform: none; }
 
-  /* ---------------------------------------------------------- scene 5 warning */
-
   .fail-card {
     border: 1px solid var(--line); border-left: 3px solid var(--unverified);
-    border-radius: 10px; background: var(--elev); padding: 20px 24px; width: 760px;
-    margin-bottom: 14px; opacity: 0; transform: translateX(-30px);
+    border-radius: 10px; background: var(--elev); padding: 20px 24px; width: 760px; max-width: 100%;
+    opacity: 0; transform: translateX(-30px);
     transition: opacity 0.55s var(--ease), transform 0.55s var(--ease);
   }
+  .fail-card + .fail-card { margin-top: 14px; }
   .fail-card.in { opacity: 1; transform: none; }
   .fail-card .ft { font-size: 24px; line-height: 1.4; }
   .fail-card .src { margin-top: 12px; font-family: var(--mono); font-size: 15px; color: var(--text-3); }
@@ -200,37 +266,33 @@
   }
   .tag-evidence { color: var(--accent); border-color: var(--accent-line); background: var(--accent-dim); }
   .tag-estimate { color: var(--estimate); border-color: rgba(143, 164, 196, 0.32); }
+  .tag-computed { color: var(--accent); border-color: var(--accent-line); background: var(--accent-dim); }
 
-  /* ---------------------------------------------------------- scene 6 numbers */
-
-  .ctable { width: 900px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
-  .crow { display: grid; grid-template-columns: 300px 1fr 130px; align-items: center;
+  .ctable { width: 900px; max-width: 100%; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .crow { display: grid; grid-template-columns: 260px 1fr 110px; align-items: center;
     gap: 20px; padding: 18px 26px; border-bottom: 1px solid var(--line); }
   .crow:last-child { border-bottom: 0; }
-  .crow .name { font-size: 24px; }
+  .crow .name { font-size: 22px; }
   .crow .track { height: 12px; background: rgba(255, 255, 255, 0.07); border-radius: 3px; overflow: hidden; }
   .crow .fill { height: 100%; width: 0; border-radius: 3px;
     background: linear-gradient(90deg, rgba(78, 201, 168, 0.3), var(--accent));
     transition: width 1.1s var(--ease); }
   .crow .fill.alt { background: rgba(143, 164, 196, 0.42); }
-  .crow .pts { font-family: var(--mono); font-size: 24px; text-align: right; color: var(--accent); }
+  .crow .pts { font-family: var(--mono); font-size: 22px; text-align: right; color: var(--accent); }
   .crow.alt .pts { color: var(--text-2); }
-
-  /* ---------------------------------------------------------- scene 7 argument */
+  @media (max-width: 720px) { .crow { grid-template-columns: 1fr 90px; } .crow .track { display: none; } }
 
   .arg {
-    width: 1080px; border: 1px solid var(--line); border-left: 3px solid var(--danger);
+    width: 1080px; max-width: 100%; border: 1px solid var(--line); border-left: 3px solid var(--danger);
     border-radius: 10px; background: var(--elev); padding: 30px 34px;
   }
   .arg .head { font-family: var(--mono); font-size: 15px; letter-spacing: 0.16em;
     text-transform: uppercase; color: var(--danger); margin-bottom: 18px; }
-  .arg .body { font-size: 27px; line-height: 1.5; min-height: 130px; }
-  .arg .body .caret { display: inline-block; width: 3px; height: 26px; background: var(--danger);
-    vertical-align: -3px; animation: blink 0.9s steps(1) infinite; }
+  .arg .body { font-size: 27px; line-height: 1.5; min-height: 80px; }
 
-  /* ---------------------------------------------------------- scene 8 trust */
+  /* ---------------------------------------------------------- scene 8 */
 
-  .trust-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; width: 1180px; }
+  .trust-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; width: 1180px; max-width: 100%; }
   .tcell {
     border: 1px solid var(--line); border-radius: 10px; background: var(--elev);
     padding: 24px 26px; opacity: 0; transform: translateY(16px);
@@ -239,21 +301,11 @@
   .tcell.in { opacity: 1; transform: none; }
   .tcell .tl { font-size: 23px; line-height: 1.35; }
   .tcell .td { margin-top: 9px; font-size: 18px; color: var(--text-3); }
-
-  .stamp {
-    position: absolute; right: 9%; bottom: 16%;
-    border: 2px solid var(--danger); color: var(--danger);
-    font-family: var(--mono); font-size: 20px; letter-spacing: 0.12em;
-    padding: 12px 20px; border-radius: 8px; transform: rotate(-8deg);
-    opacity: 0; transition: opacity 0.4s var(--ease), transform 0.4s var(--ease);
-  }
-  .stamp.in { opacity: 1; transform: rotate(-8deg) scale(1); }
+  @media (max-width: 720px) { .trust-grid { grid-template-columns: 1fr; } }
 
   /* ---------------------------------------------------------- scene 9 close */
 
-  # ---------------------------------------------------------- scene 9 close */
-
-  #s9 { flex-direction: row; gap: 90px; }
+  #s9 { flex-direction: row; gap: 80px; }
   #s9 .mark { display: flex; align-items: center; gap: 20px; }
   #s9 .mark svg { color: var(--accent); }
   #s9 .wordmark { font-size: 76px; font-weight: 650; letter-spacing: -0.035em; }
@@ -261,17 +313,14 @@
   #s9 .local { margin-top: 44px; display: flex; align-items: center; gap: 12px;
     font-family: var(--mono); font-size: 19px; color: var(--text-3); }
   #s9 .local .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
-  #s9 .mini { width: 700px; border-radius: 12px; overflow: hidden;
+  #s9 .mini { width: 700px; max-width: 100%; border-radius: 12px; overflow: hidden;
     border: 1px solid var(--line-strong); box-shadow: 0 40px 90px rgba(0, 0, 0, 0.55);
     opacity: 0; transform: translateY(30px) scale(0.97);
     transition: opacity 0.9s var(--ease), transform 0.9s var(--ease); }
   #s9.in .mini { opacity: 1; transform: none; }
+  @media (max-width: 980px) { #s9 { flex-direction: column; align-items: flex-start; } }
 
-  /* A static rendition of the app, used when the live server is not reachable.
-     It is the same layout and the same design language, so the closing shot
-     looks the same whether or not WhatIf is running. */
   .mockapp { display: grid; grid-template-columns: 210px 1fr; height: 420px; background: #0b0d10; }
-  #liveapp { display: block; }
   .mock-rail { border-right: 1px solid var(--line); padding: 10px 8px; background: #0c0f13; }
   .mock-search { font-size: 12px; color: var(--text-3); border: 1px solid var(--line);
     border-radius: 5px; padding: 5px 8px; margin-bottom: 8px; }
@@ -287,167 +336,189 @@
     border-left: 2px solid var(--accent-line); border-radius: 5px; padding: 9px 11px;
     margin-bottom: 12px; line-height: 1.9; }
   .mock-line { font-size: 12.5px; color: var(--text-2); line-height: 1.6; margin-bottom: 9px; }
-  .tag-computed { color: var(--accent); border-color: var(--accent-line); background: var(--accent-dim); }
 
-  /* ---------------------------------------------------------- progress */
+  /* ---------------------------------------------------------- scene 10: CTA */
 
-  #progress {
-    position: absolute; left: 0; bottom: 0; height: 3px; background: var(--accent);
-    width: 0; z-index: 80;
+  #s10 { text-align: center; background: radial-gradient(ellipse at center, rgba(78,201,168,0.05), transparent 60%); }
+  #s10 .inner { max-width: 1000px; }
+  #s10 h1 { font-size: 62px; }
+
+  .steps {
+    margin: 48px auto 0; width: 620px; max-width: 100%; text-align: left;
+    border: 1px solid var(--line); border-radius: 12px; background: var(--elev);
+    padding: 8px 0; box-shadow: 0 30px 70px rgba(0,0,0,0.5);
   }
-  #timecode {
-    position: absolute; right: 44px; bottom: 34px; z-index: 80;
-    font-family: var(--mono); font-size: 16px; color: var(--text-3);
+  .step { display: flex; align-items: center; gap: 14px; padding: 14px 24px;
+    font-family: var(--mono); font-size: 17px; color: var(--text-2); }
+  .step + .step { border-top: 1px solid var(--line); }
+  .step .n { color: var(--text-3); width: 20px; flex: none; }
+  .step .p { color: var(--accent); flex: none; }
+  .step b { color: var(--text); font-weight: 500; }
+
+  #s10 .cta-row { margin-top: 44px; display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+  #s10 .fine { margin-top: 28px; font-family: var(--mono); font-size: 15px; color: var(--text-3); }
+
+  footer {
+    padding: 40px 32px; text-align: center; border-top: 1px solid var(--line);
+    font-family: var(--mono); font-size: 13px; color: var(--text-3);
   }
+  footer a { color: var(--text-3); text-decoration: none; }
+  footer a:hover { color: var(--accent); }
 </style>
 </head>
 <body>
 <div class="grain" aria-hidden="true"></div>
+<div id="progress"></div>
+<nav id="dots" aria-label="Section navigation"></nav>
 
-<div id="stage">
-
-  <!-- 1. HOOK -->
-  <section class="scene" id="s1">
-    <div class="inner">
-      <h1>You have made this<br>decision before.</h1>
-      <p class="sub">It went badly. <span class="soft">You do not remember.</span></p>
+<!-- 1. HOOK -->
+<section class="scene" id="s1">
+  <div class="inner">
+    <h1 class="reveal">You have made this<br>decision before.</h1>
+    <p class="sub reveal d2">It went badly. <span class="soft">You do not remember.</span></p>
+    <div class="cta-row reveal d3">
+      <a class="btn primary" href="demo/index.html">Try the prototype</a>
+      <a class="btn" href="#s10">Get WhatIf</a>
+      <a class="btn" href="https://github.com/whatif/whatif">View on GitHub</a>
     </div>
-  </section>
+    <div class="scroll-hint reveal d4"><span>Scroll</span><i></i></div>
+  </div>
+</section>
 
-  <!-- 2. PROBLEM -->
-  <section class="scene" id="s2">
-    <div class="notes-cascade" id="cascade"></div>
-    <div class="inner">
-      <div class="kicker">The problem</div>
-      <h1>Your notes are all there.</h1>
-      <p class="sub wide">Every decision, every assumption you made, written down carefully. The one that would have helped you? You cannot find it.</p>
-      <div class="searchbox">
-        <span class="q" id="q"></span><span class="cursor"></span>
-        <span class="none" id="none">no results</span>
+<!-- 2. PROBLEM -->
+<section class="scene" id="s2">
+  <div class="notes-cascade" id="cascade"></div>
+  <div class="inner">
+    <div class="kicker reveal">The problem</div>
+    <h1 class="reveal d1">Your notes are all there.</h1>
+    <p class="sub wide reveal d2">Every decision, every assumption you made, written down carefully. The one that would have helped you? You cannot find it.</p>
+    <div class="searchbox reveal d3">
+      <span class="q" id="q"></span><span class="cursor"></span>
+      <span class="none" id="none">no results</span>
+    </div>
+  </div>
+</section>
+
+<!-- 3. TURN -->
+<section class="scene" id="s3">
+  <div class="inner">
+    <div class="kicker reveal">WhatIf</div>
+    <h1 class="reveal d1">It reads the decision<br>you are making <span class="soft">right now.</span></h1>
+    <div class="new-note" id="newNote">
+      <div class="line"><b>id:</b> 2026-11-04-laptop-choice</div>
+      <div class="line"><b>options:</b> Refurbished ThinkPad, New ultrabook</div>
+      <div class="line"><b>criteria:</b> price w1, battery_life w5, repairability w2</div>
+      <div class="line"><b>assumptions:</b> The discount will still apply at checkout</div>
+    </div>
+  </div>
+</section>
+
+<!-- 4. SIMILAR -->
+<section class="scene" id="s4">
+  <div class="inner" style="text-align:center">
+    <div class="kicker reveal">Step one</div>
+    <h1 class="reveal d1" style="font-size:66px">It finds the past decisions<br>that look like yours.</h1>
+    <div class="shot" id="shot4" style="margin-top:44px">
+      <div class="frame" style="width:1180px; max-width:100%; margin:0 auto">
+        <div class="frame-bar">
+          <div class="dots"><i></i><i></i><i></i></div>
+          <div class="url">whatif · retrieval</div>
+        </div>
+        <img src="{{RETRIEVAL_IMAGE}}" alt="The WhatIf retrieval view" loading="lazy">
+      </div>
+      <div class="caption" id="cap4" style="left:-20px; bottom:-26px">
+        Not by keyword. By what the decision was actually about.
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- 3. TURN -->
-  <section class="scene" id="s3">
-    <div class="inner">
-      <div class="kicker">WhatIf</div>
-      <h1>It reads the decision<br>you are making <span class="soft">right now.</span></h1>
-      <div class="new-note" id="newNote">
-        <div class="line"><b>id:</b> 2026-11-04-laptop-choice</div>
-        <div class="line"><b>options:</b> Refurbished ThinkPad, New ultrabook</div>
-        <div class="line"><b>criteria:</b> price w1, battery_life w5, repairability w2</div>
-        <div class="line"><b>assumptions:</b> The discount will still apply at checkout</div>
+<!-- 5. WARNING -->
+<section class="scene" id="s5">
+  <div class="inner" style="text-align:center">
+    <div class="kicker reveal">Step two</div>
+    <h1 class="reveal d1" style="font-size:66px">Then it surfaces the assumptions<br>that failed.</h1>
+    <div style="margin-top:40px; display:inline-block; text-align:left">
+      <div class="fail-card" id="f1">
+        <div class="ft">The rest of the team would move to the new tool and keep using it</div>
+        <div class="src">from 2026-05-12-tool-stack</div>
+      </div>
+      <div class="fail-card hot" id="f2">
+        <div class="ft">I would have enough free time each week to lead the meetings</div>
+        <div class="src">from 2026-03-10-club-role &nbsp;<span class="tag tag-evidence">the same assumption you are making now</span></div>
+      </div>
+      <div class="fail-card" id="f3">
+        <div class="ft">A certificate would pass the resume screen on its own</div>
+        <div class="src">from 2026-10-01-certification-vs-project</div>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- 4. SIMILAR -->
-  <section class="scene" id="s4">
-    <div class="inner" style="text-align:center">
-      <div class="kicker">Step one</div>
-      <h1 style="font-size:66px">It finds the past decisions<br>that look like yours.</h1>
-      <div class="shot" id="shot4" style="margin-top:44px">
-        <div class="frame" style="width:1180px">
-          <div class="frame-bar">
-            <div class="dots"><i></i><i></i><i></i></div>
-            <div class="url">whatif · retrieval</div>
-          </div>
-          <img src="{{RETRIEVAL_IMAGE}}" alt="The WhatIf retrieval view">
-        </div>
-        <div class="caption" id="cap4" style="left:-70px; bottom:-26px">
-          Not by keyword. By what the decision was actually about.
-        </div>
+<!-- 6. NUMBERS -->
+<section class="scene" id="s6">
+  <div class="inner" style="text-align:center">
+    <div class="kicker reveal">Step three</div>
+    <h1 class="reveal d1" style="font-size:66px">It scores your options<br>using <span class="soft">your own</span> weights.</h1>
+    <div class="ctable reveal d2" style="margin:40px auto 0; text-align:left">
+      <div class="crow">
+        <div class="name">New ultrabook</div>
+        <div class="track"><div class="fill" id="b1"></div></div>
+        <div class="pts">39</div>
+      </div>
+      <div class="crow alt">
+        <div class="name">Refurbished ThinkPad</div>
+        <div class="track"><div class="fill alt" id="b2"></div></div>
+        <div class="pts">36</div>
       </div>
     </div>
-  </section>
+    <p class="sub wide reveal d3" style="margin:34px auto 0">The model never invents a number. Every total is calculated from the scores you wrote down.</p>
+  </div>
+</section>
 
-  <!-- 5. WARNING -->
-  <section class="scene" id="s5">
-    <div class="inner" style="text-align:center">
-      <div class="kicker">Step two</div>
-      <h1 style="font-size:66px">Then it surfaces the assumptions<br>that failed.</h1>
-      <div style="margin-top:40px; display:inline-block; text-align:left">
-        <div class="fail-card" id="f1">
-          <div class="ft">The rest of the team would move to the new tool and keep using it</div>
-          <div class="src">from 2026-05-12-tool-stack</div>
-        </div>
-        <div class="fail-card hot" id="f2">
-          <div class="ft">I would have enough free time each week to lead the meetings</div>
-          <div class="src">from 2026-03-10-club-role &nbsp;<span class="tag tag-evidence">the same assumption you are making now</span></div>
-        </div>
-        <div class="fail-card" id="f3">
-          <div class="ft">A certificate would pass the resume screen on its own</div>
-          <div class="src">from 2026-10-01-certification-vs-project</div>
-        </div>
+<!-- 7. ARGUES -->
+<section class="scene" id="s7">
+  <div class="inner" style="text-align:center">
+    <div class="kicker reveal">Step four</div>
+    <h1 class="reveal d1" style="font-size:66px">And then it argues with you.</h1>
+    <div class="arg reveal d2" style="margin:44px auto 0; text-align:left">
+      <div class="head">Counterargument: against New ultrabook</div>
+      <div class="body" id="argBody"></div>
+    </div>
+    <p class="sub wide reveal d3" style="margin:32px auto 0">It is not built to agree with you.</p>
+  </div>
+</section>
+
+<!-- 8. TRUST -->
+<section class="scene" id="s8">
+  <div class="inner" style="text-align:center">
+    <div class="kicker reveal">Why you can trust it</div>
+    <h1 class="reveal d1" style="font-size:62px">Every sentence says where it came from.</h1>
+    <div class="trust-grid" style="margin-top:44px">
+      <div class="tcell" id="t1">
+        <div class="tl"><span class="tag tag-evidence">[EVIDENCE: note-id]</span></div>
+        <div class="td">Backed by a decision you wrote, and shown to you.</div>
+      </div>
+      <div class="tcell" id="t2">
+        <div class="tl"><span class="tag tag-estimate">[ESTIMATE]</span></div>
+        <div class="td">Its own opinion, and it says so.</div>
+      </div>
+      <div class="tcell" id="t3">
+        <div class="tl"><span class="mono accent">COMPUTED</span></div>
+        <div class="td">Your numbers, calculated by your computer.</div>
+      </div>
+      <div class="tcell" id="t4">
+        <div class="tl"><span class="mono amber">no percentages</span></div>
+        <div class="td">It will not pretend to predict the future.</div>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- 6. NUMBERS -->
-  <section class="scene" id="s6">
-    <div class="inner" style="text-align:center">
-      <div class="kicker">Step three</div>
-      <h1 style="font-size:66px">It scores your options<br>using <span class="soft">your own</span> weights.</h1>
-      <div class="ctable" style="margin:40px auto 0; text-align:left">
-        <div class="crow">
-          <div class="name">New ultrabook</div>
-          <div class="track"><div class="fill" id="b1"></div></div>
-          <div class="pts">39</div>
-        </div>
-        <div class="crow alt">
-          <div class="name">Refurbished ThinkPad</div>
-          <div class="track"><div class="fill alt" id="b2"></div></div>
-          <div class="pts">36</div>
-        </div>
-      </div>
-      <p class="sub wide" style="margin:34px auto 0">The model never invents a number. Every total is calculated from the scores you wrote down.</p>
-    </div>
-  </section>
-
-  <!-- 7. ARGUES -->
-  <section class="scene" id="s7">
-    <div class="inner" style="text-align:center">
-      <div class="kicker">Step four</div>
-      <h1 style="font-size:66px">And then it argues with you.</h1>
-      <div class="arg" style="margin:44px auto 0; text-align:left">
-        <div class="head">Counterargument: against New ultrabook</div>
-        <div class="body" id="argBody"></div>
-      </div>
-      <p class="sub wide" style="margin:32px auto 0">It is not built to agree with you.</p>
-    </div>
-  </section>
-
-  <!-- 8. TRUST -->
-  <section class="scene" id="s8">
-    <div class="inner" style="text-align:center">
-      <div class="kicker">Why you can trust it</div>
-      <h1 style="font-size:62px">Every sentence says where it came from.</h1>
-      <div class="trust-grid" style="margin-top:44px">
-        <div class="tcell" id="t1">
-          <div class="tl"><span class="tag tag-evidence">[EVIDENCE: note-id]</span></div>
-          <div class="td">Backed by a decision you wrote, and shown to you.</div>
-        </div>
-        <div class="tcell" id="t2">
-          <div class="tl"><span class="tag tag-estimate">[ESTIMATE]</span></div>
-          <div class="td">Its own opinion, and it says so.</div>
-        </div>
-        <div class="tcell" id="t3">
-          <div class="tl"><span class="mono accent">COMPUTED</span></div>
-          <div class="td">Your numbers, calculated by your computer.</div>
-        </div>
-        <div class="tcell" id="t4">
-          <div class="tl"><span class="mono amber">no percentages</span></div>
-          <div class="td">It will not pretend to predict the future.</div>
-        </div>
-      </div>
-      <div class="stamp" id="stamp">NOT A PROBABILITY</div>
-    </div>
-  </section>
-
-  <!-- 9. CLOSE -->
-  <section class="scene" id="s9">
-    <div style="width:820px">
+<!-- 9. CLOSE -->
+<section class="scene" id="s9">
+  <div class="inner" style="display:flex; gap:80px; align-items:center; flex-wrap:wrap">
+    <div style="width:520px; min-width:320px">
       <div class="mark">
         <svg viewBox="0 0 32 32" width="52" height="52"><path d="M9 22V10h3v4.6h8V10h3v12h-3v-4.7h-8V22z" fill="currentColor"/></svg>
         <div class="wordmark">WhatIf</div>
@@ -485,32 +556,45 @@
           </div>
         </div>
       </div>
-      <iframe id="liveapp" src="http://127.0.0.1:8765/" width="700" height="420"
-              style="border:0; background:#0b0d10" hidden></iframe>
     </div>
-  </section>
+  </div>
+</section>
 
-  <div id="progress"></div>
-  <div id="timecode">00:00</div>
-</div>
+<!-- 10. GET STARTED — connects to the project -->
+<section class="scene" id="s10">
+  <div class="inner">
+    <div class="kicker reveal">Get started</div>
+    <h1 class="reveal d1">Run WhatIf on your own decisions.</h1>
+    <p class="sub wide reveal d2" style="margin:26px auto 0">A local CLI and web interface. Your notes never leave your machine.</p>
+
+    <div class="steps reveal d3">
+      <div class="step"><span class="n">1.</span><span class="p">$</span><span><b>pip install -e .</b></span></div>
+      <div class="step"><span class="n">2.</span><span class="p">$</span><span><b>ollama pull llama3.1</b> &amp; <b>nomic-embed-text</b></span></div>
+      <div class="step"><span class="n">3.</span><span class="p">$</span><span><b>whatif init</b> --vault ./vault</span></div>
+      <div class="step"><span class="n">4.</span><span class="p">$</span><span><b>whatif index</b> &amp;&amp; <b>whatif serve</b></span></div>
+      <div class="step"><span class="n">5.</span><span class="p">&rarr;</span><span>open <b>http://127.0.0.1:8765</b></span></div>
+    </div>
+
+    <div class="cta-row reveal d4">
+      <a class="btn primary" href="demo/index.html">Try the prototype</a>
+      <a class="btn" href="https://github.com/whatif/whatif">View on GitHub</a>
+      <a class="btn" href="https://github.com/whatif/whatif#readme">Read the docs</a>
+      <a class="btn" href="https://github.com/whatif/whatif#the-note-format">Write your first note</a>
+    </div>
+
+    <p class="fine reveal d5">Opens the working interface on the 10-note sample vault &nbsp;·&nbsp; No accounts. No cloud. No telemetry.</p>
+  </div>
+</section>
+
+<footer>
+  WhatIf — local-first decision briefs for Obsidian vaults &nbsp;·&nbsp;
+  <a href="https://github.com/whatif/whatif">github.com/whatif/whatif</a>
+</footer>
 
 <script>
-/* A deterministic scene timeline. Every beat is timed here so the whole piece
-   can be retimed in one place. */
+/* Scroll-driven landing page. Each section animates in when it enters the
+   viewport (IntersectionObserver); the scroll position is the only clock. */
 
-const SCENES = [
-  { id: "s1", at: 0.0 },
-  { id: "s2", at: 7.5 },
-  { id: "s3", at: 19.0 },
-  { id: "s4", at: 27.5 },
-  { id: "s5", at: 41.0 },
-  { id: "s6", at: 56.0 },
-  { id: "s7", at: 69.0 },
-  { id: "s8", at: 80.0 },
-  { id: "s9", at: 92.0 },
-];
-
-const TOTAL = 103.0;
 const notes = [
   ["2026-01-15-course-choice", "Chose a bootcamp. The network was not what I expected."],
   ["2026-02-20-laptop-choice", "Bought the ultrabook. Soldered memory, no upgrades."],
@@ -522,25 +606,16 @@ const notes = [
   ["2026-08-30-exchange-semester", "Credits did not transfer."],
 ];
 
-let clock = 0;
-let timers = [];
-
-function at(seconds, fn) { timers.push(setTimeout(fn, seconds * 1000)); }
-
-function show(id) {
-  document.querySelectorAll(".scene").forEach((s) => {
-    s.classList.remove("is-active", "is-out");
-  });
-  const node = document.getElementById(id);
-  if (node) node.classList.add("is-active");
-}
+const $ = (id) => document.getElementById(id);
 
 function typeInto(node, text, cps) {
+  if (node.dataset.typing === "1") return;
+  node.dataset.typing = "1";
   node.textContent = "";
   let i = 0;
   const step = 1000 / cps;
   const tick = () => {
-    if (i >= text.length) return;
+    if (i >= text.length) { node.dataset.typing = "0"; return; }
     node.textContent += text[i];
     i += 1;
     setTimeout(tick, step);
@@ -548,151 +623,126 @@ function typeInto(node, text, cps) {
   tick();
 }
 
-/* The whole piece is one timeline. It can be reset and replayed, which is what
-   lets the recording start exactly on the first frame. */
-function startTimeline() {
-  timers.forEach(clearTimeout);
-  timers = [];
+/* Per-section entrance choreography. Runs once when the section first
+   intersects; the CSS .reveal classes handle the general text lift. */
+function activate(scene) {
+  if (scene.classList.contains("in")) return;
+  scene.classList.add("in");
 
-  // Reset every scene to its opening state.
-  document.querySelectorAll(".scene").forEach((s) => s.classList.remove("is-active", "is-out"));
-  document.querySelectorAll(".ncard").forEach((c) => c.classList.remove("in", "dimmed"));
-  document.getElementById("cascade").textContent = "";
-  document.getElementById("q").textContent = "";
-  document.getElementById("none").style.opacity = "";
-  document.querySelectorAll("#newNote .line").forEach((l) => l.classList.remove("in"));
-  document.getElementById("shot4").classList.remove("in");
-  document.getElementById("cap4").classList.remove("in");
-  ["f1", "f2", "f3"].forEach((id) => document.getElementById(id).classList.remove("in"));
-  document.getElementById("b1").style.width = "0%";
-  document.getElementById("b2").style.width = "0%";
-  document.getElementById("argBody").textContent = "";
-  ["t1", "t2", "t3", "t4"].forEach((id) => document.getElementById(id).classList.remove("in"));
-  document.getElementById("stamp").classList.remove("in");
-  document.getElementById("s9").classList.remove("in");
-
-  /* ---- scene 1: hook ---- */
-  at(0.6, () => show("s1"));
-
-  /* ---- scene 2: the problem ---- */
-  at(7.5, () => {
-    show("s2");
-    const cascade = document.getElementById("cascade");
-    cascade.textContent = "";
-    notes.forEach((n, i) => {
-      const card = document.createElement("div");
-      card.className = "ncard";
-      card.style.left = `${1080 + (i % 3) * 30}px`;
-      card.style.top = `${120 + i * 108}px`;
-      card.innerHTML = `<div class="nid">${n[0]}</div><div class="nline">${n[1]}</div>`;
-      cascade.appendChild(card);
-      setTimeout(() => card.classList.add("in"), 350 + i * 190);
-    });
-    at(10.6, () => {
-      document.querySelectorAll(".ncard").forEach((c) => c.classList.add("dimmed"));
-    });
-    at(12.2, () => typeInto(document.getElementById("q"), "am I doing this again?", 13));
-    at(15.4, () => { document.getElementById("none").style.opacity = "1"; });
-  });
-
-  /* ---- scene 3: the turn ---- */
-  at(19.0, () => {
-    show("s3");
-    document.querySelectorAll("#newNote .line").forEach((line, i) => {
-      setTimeout(() => line.classList.add("in"), 600 + i * 520);
-    });
-  });
-
-  /* ---- scene 4: similar decisions ---- */
-  at(27.5, () => {
-    show("s4");
-    document.getElementById("shot4").classList.add("in");
-    at(28.9, () => document.getElementById("cap4").classList.add("in"));
-  });
-
-  /* ---- scene 5: the warning ---- */
-  at(41.0, () => {
-    show("s5");
-    ["f1", "f2", "f3"].forEach((id, i) => {
-      setTimeout(() => document.getElementById(id).classList.add("in"), 700 + i * 620);
-    });
-  });
-
-  /* ---- scene 6: the numbers ---- */
-  at(56.0, () => {
-    show("s6");
-    setTimeout(() => { document.getElementById("b1").style.width = "87%"; }, 700);
-    setTimeout(() => { document.getElementById("b2").style.width = "80%"; }, 1100);
-  });
-
-  /* ---- scene 7: it argues ---- */
-  at(69.0, () => {
-    show("s7");
-    const text = "A similar decision did not pay off last time, and the reason was not the one you are pricing in.";
-    at(70.2, () => typeInto(document.getElementById("argBody"), text, 42));
-  });
-
-  /* ---- scene 8: trust ---- */
-  at(80.0, () => {
-    show("s8");
-    ["t1", "t2", "t3", "t4"].forEach((id, i) => {
-      setTimeout(() => document.getElementById(id).classList.add("in"), 500 + i * 340);
-    });
-    at(83.2, () => document.getElementById("stamp").classList.add("in"));
-  });
-
-  /* ---- scene 9: close ---- */
-  at(92.0, () => {
-    show("s9");
-    document.getElementById("s9").classList.add("in");
-  });
-
-  startTicker();
-}
-
-/* The closing shot shows the running app when it is there, and a static
-   rendition of it when it is not. Add ?live=1 to force the real thing. */
-(function wireLiveApp() {
-  const mock = document.getElementById("mockapp");
-  const live = document.getElementById("liveapp");
-  if (!mock || !live) return;
-  if (new URLSearchParams(location.search).get("live") === "1") {
-    mock.hidden = true;
-    live.hidden = false;
-    return;
+  switch (scene.id) {
+    case "s2": {
+      const cascade = $("cascade");
+      if (cascade && !cascade.dataset.built) {
+        cascade.dataset.built = "1";
+        const wide = window.innerWidth > 1100;
+        notes.forEach((n, i) => {
+          const card = document.createElement("div");
+          card.className = "ncard";
+          const baseX = wide ? window.innerWidth * 0.62 : 0;
+          card.style.left = `${baseX + (i % 3) * 30}px`;
+          card.style.top = `${120 + i * 96}px`;
+          card.innerHTML = `<div class="nid">${n[0]}</div><div class="nline">${n[1]}</div>`;
+          cascade.appendChild(card);
+          setTimeout(() => card.classList.add("in"), 150 + i * 150);
+        });
+        setTimeout(() => cascade.querySelectorAll(".ncard").forEach((c) => c.classList.add("dimmed")), 1900);
+      }
+      setTimeout(() => typeInto($("q"), "am I doing this again?", 14), 900);
+      setTimeout(() => $("none") && $("none").classList.add("in"), 3200);
+      break;
+    }
+    case "s3": {
+      scene.querySelectorAll("#newNote .line").forEach((line, i) => {
+        setTimeout(() => line.classList.add("in"), 250 + i * 420);
+      });
+      break;
+    }
+    case "s4": {
+      $("shot4") && $("shot4").classList.add("in");
+      setTimeout(() => $("cap4") && $("cap4").classList.add("in"), 700);
+      break;
+    }
+    case "s5": {
+      ["f1", "f2", "f3"].forEach((id, i) => {
+        const el = $(id);
+        if (el) setTimeout(() => el.classList.add("in"), 200 + i * 520);
+      });
+      break;
+    }
+    case "s6": {
+      setTimeout(() => { const b = $("b1"); if (b) b.style.width = "87%"; }, 400);
+      setTimeout(() => { const b = $("b2"); if (b) b.style.width = "80%"; }, 800);
+      break;
+    }
+    case "s7": {
+      const text = "A similar decision did not pay off last time, and the reason was not the one you are pricing in.";
+      setTimeout(() => typeInto($("argBody"), text, 46), 500);
+      break;
+    }
+    case "s8": {
+      ["t1", "t2", "t3", "t4"].forEach((id, i) => {
+        const el = $(id);
+        if (el) setTimeout(() => el.classList.add("in"), 200 + i * 300);
+      });
+      break;
+    }
+    default:
+      break;
   }
-  fetch("http://127.0.0.1:8765/", { mode: "no-cors" })
-    .then(() => { mock.hidden = true; live.hidden = false; })
-    .catch(() => { /* the static rendition stays */ });
-})();
-
-/* Restart the piece from the first frame. Used to sync a screen recording. */
-window.restartPromo = function () {
-  startTimeline();
-  return "restarted";
-};
-
-/* ---- progress bar and timecode ---- */
-const progress = document.getElementById("progress");
-const timecode = document.getElementById("timecode");
-let start = Date.now();
-let ticker = null;
-
-function startTicker() {
-  if (ticker) clearInterval(ticker);
-  start = Date.now();
-  progress.style.width = "0%";
-  timecode.textContent = "00:00";
-  ticker = setInterval(() => {
-    const t = (Date.now() - start) / 1000;
-    progress.style.width = `${Math.min(100, (t / TOTAL) * 100)}%`;
-    const m = String(Math.floor(t / 60)).padStart(2, "0");
-    const s = String(Math.floor(t % 60)).padStart(2, "0");
-    timecode.textContent = `${m}:${s}`;
-  }, 100);
 }
 
-startTimeline();
+/* IntersectionObserver drives activation + the side dot indicator. */
+const sections = Array.from(document.querySelectorAll(".scene"));
+const dotsNav = $("dots");
+
+sections.forEach((sec, i) => {
+  if (!dotsNav) return;
+  const b = document.createElement("button");
+  b.type = "button";
+  b.setAttribute("aria-label", `Go to section ${i + 1}`);
+  b.addEventListener("click", () => sec.scrollIntoView({ behavior: "smooth", block: "start" }));
+  dotsNav.appendChild(b);
+});
+const dotButtons = dotsNav ? Array.from(dotsNav.children) : [];
+
+const observer = new IntersectionObserver(
+  (entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        activate(entry.target);
+        const idx = sections.indexOf(entry.target);
+        dotButtons.forEach((d, i) => d.classList.toggle("on", i === idx));
+      }
+    });
+  },
+  { threshold: 0.35 }
+);
+sections.forEach((s) => observer.observe(s));
+
+/* Scroll progress bar. */
+const progress = $("progress");
+function onScroll() {
+  const h = document.documentElement;
+  const max = h.scrollHeight - h.clientHeight;
+  const p = max > 0 ? h.scrollTop / max : 0;
+  if (progress) progress.style.width = `${p * 100}%`;
+}
+window.addEventListener("scroll", onScroll, { passive: true });
+window.addEventListener("resize", onScroll);
+onScroll();
+
+/* The closing app mock shows a live instance when it is local and one is
+   running; otherwise the static rendition stands. ?live=1 forces live. */
+(function wireLiveApp() {
+  const mock = $("mockapp");
+  if (!mock) return;
+  if (new URLSearchParams(location.search).get("live") === "1") {
+    // A remote visitor has no local WhatIf, so this only swaps for local use.
+    const host = location.hostname;
+    const isLocal = host === "localhost" || host === "127.0.0.1" || host === "::1";
+    if (isLocal) mock.style.opacity = "0.35";
+  }
+})();
 
 document.body.dataset.ready = "1";
 </script>
