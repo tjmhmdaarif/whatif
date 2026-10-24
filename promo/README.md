@@ -75,9 +75,15 @@ interface, and that folder has to ship next to the page.
 Assemble a deploy folder **outside the repository**:
 
 ```
-<deploy>/index.html    <- promo/whatif-promo.html
-<deploy>/demo/         <- promo/demo/
+<deploy>/index.html              <- promo/whatif-promo.html
+<deploy>/demo/                   <- promo/demo/
+<deploy>/whatif-commercial.mp4   <- promo/whatif-commercial.mp4
 ```
+
+The third file is the click-through target of the animated preview in the root
+`README.md`. GitHub strips `<video>` tags from READMEs, so the README shows a GIF
+and links to the full video on this host, which serves it as `video/mp4` with
+range requests. Leave it out and that link 404s.
 
 Then run `vercel deploy --prod` from that folder.
 

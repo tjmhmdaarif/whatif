@@ -51,9 +51,12 @@ new note ──► parse ──► embed ──► retrieve top-k past decisions
 
 ## Demo
 
-**The 41-second commercial** ([raw file](promo/whatif-commercial.mp4)):
+**The 41-second commercial** — click the preview for the full video:
 
-<video src="promo/whatif-commercial.mp4" controls width="720" preload="metadata" muted playsinline></video>
+[![WhatIf commercial preview](promo/whatif-commercial-preview.gif)](https://whatif-promo.vercel.app/whatif-commercial.mp4)
+
+The source is [`promo/whatif-commercial.mp4`](promo/whatif-commercial.mp4) (720p,
+6.9 MB, re-encoded from the 51.7 MB screen capture).
 
 - **Landing page:** https://whatif-promo.vercel.app — a scroll-through of what
   WhatIf does, ending in the install steps.
