@@ -51,6 +51,10 @@ new note ──► parse ──► embed ──► retrieve top-k past decisions
 
 ## Demo
 
+**The 41-second commercial** ([raw file](promo/whatif-commercial.mp4)):
+
+<video src="promo/whatif-commercial.mp4" controls width="720" preload="metadata" muted playsinline></video>
+
 - **Landing page:** https://whatif-promo.vercel.app — a scroll-through of what
   WhatIf does, ending in the install steps.
 - **Working prototype:** https://whatif-promo.vercel.app/demo/ — the real local web
